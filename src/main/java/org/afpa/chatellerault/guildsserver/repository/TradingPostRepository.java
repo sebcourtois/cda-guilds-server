@@ -13,9 +13,22 @@ import java.util.UUID;
 public class TradingPostRepository {
 
     JdbcClient jdbcClient;
+    TradingPostRowMapper rowMapper;
 
     public TradingPostRepository(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
+        this.rowMapper = new TradingPostRowMapper();
+    }
+
+    public static TradingPost mapRow(@NonNull ResultSet row) throws SQLException {
+        return TradingPost.builder()
+                .id(row.getObject("id", UUID.class))
+                .name(row.getString("name"))
+                .posX(row.getInt("location_x"))
+                .posY(row.getInt("location_y"))
+                .population(row.getInt("population"))
+                .hostId(row.getObject("id_host", UUID.class))
+                .build();
     }
 
     public TradingPost create(TradingPost trading_post) {
@@ -59,6 +72,6 @@ class TradingPostRowMapper implements RowMapper<TradingPost> {
 
     @Override
     public TradingPost mapRow(@NonNull ResultSet row, int rowNum) throws SQLException {
-        return TradingPost.fromTableRow(row);
+        return TradingPostRepository.mapRow(row);
     }
 }
