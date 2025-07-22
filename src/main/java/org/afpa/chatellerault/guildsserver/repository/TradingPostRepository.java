@@ -13,11 +13,10 @@ import java.util.UUID;
 public class TradingPostRepository {
 
     JdbcClient jdbcClient;
-    TradingPostRowMapper rowMapper;
+    TradingPostRowMapper rowMapper = new TradingPostRowMapper();
 
     public TradingPostRepository(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
-        this.rowMapper = new TradingPostRowMapper();
     }
 
     public static TradingPost mapRow(@NonNull ResultSet row) throws SQLException {
@@ -41,7 +40,7 @@ public class TradingPostRepository {
                 .param(trading_post.getPosX())
                 .param(trading_post.getPosY())
                 .param(trading_post.getPopulation())
-                .query(new TradingPostRowMapper()).single();
+                .query(rowMapper).single();
     }
 
     public TradingPost findByName(String someName) {
@@ -49,7 +48,7 @@ public class TradingPostRepository {
 
         return this.jdbcClient.sql(statement)
                 .param(someName)
-                .query(new TradingPostRowMapper()).single();
+                .query(rowMapper).single();
     }
 
     public TradingPost findById(UUID someId) {
@@ -57,7 +56,7 @@ public class TradingPostRepository {
 
         return this.jdbcClient.sql(statement)
                 .param(someId)
-                .query(new TradingPostRowMapper()).single();
+                .query(rowMapper).single();
     }
 
     public UUID delete(TradingPost tradingPost) {
