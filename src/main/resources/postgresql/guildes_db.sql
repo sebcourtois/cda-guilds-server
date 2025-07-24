@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "config"
 CREATE TABLE IF NOT EXISTS "host"
 (
     id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    ip_address inet,
+    ip_address inet NOT NULL,
     port       int CHECK (port >= 49152 AND port <= 65535),
     UNIQUE (ip_address, port)
 );

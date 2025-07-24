@@ -12,6 +12,6 @@ public class Caravan {
     int posX = 0;
     @lombok.Builder.Default
     int posY = 0;
-    @lombok.Builder.Default
-    TradingPost destination = null;
+
+    TradingPost destination;
 }

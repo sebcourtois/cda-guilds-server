@@ -4,8 +4,11 @@ import java.util.UUID;
 
 @lombok.Data
 @lombok.Builder
+@lombok.AllArgsConstructor
 public class TradingPost {
+    @lombok.NonNull
     UUID id;
+    @lombok.NonNull
     String name;
 
     @lombok.Builder.Default
@@ -14,6 +17,6 @@ public class TradingPost {
     int posY = 0;
     @lombok.Builder.Default
     int population = 0;
-    @lombok.Builder.Default
-    UUID hostId = null;
+
+    UUID hostId;
 }
