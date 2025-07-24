@@ -8,6 +8,7 @@ import org.springframework.lang.Nullable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -58,20 +59,20 @@ public class TradingPostRepository {
         return this.jdbcClient.sql(statement).param(tradingPost.getId()).query(UUID.class).single();
     }
 
-    public TradingPost findByName(String someName) {
+    public Optional<TradingPost> findByName(String someName) {
         String statement = "SELECT * FROM trading_post WHERE name = ?";
 
         return this.jdbcClient.sql(statement)
                 .param(someName)
-                .query(rowMapper).single();
+                .query(rowMapper).optional();
     }
 
-    public TradingPost findById(UUID someId) {
+    public Optional<TradingPost> findById(UUID someId) {
         String statement = "SELECT * FROM trading_post WHERE id = ?";
 
         return this.jdbcClient.sql(statement)
                 .param(someId)
-                .query(rowMapper).single();
+                .query(rowMapper).optional();
     }
 }
 

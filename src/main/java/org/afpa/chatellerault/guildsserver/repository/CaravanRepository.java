@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.UUID;
 
 public class CaravanRepository {
@@ -57,7 +58,7 @@ public class CaravanRepository {
         return this.jdbcClient.sql(statement).param(caravan.getId()).query(UUID.class).single();
     }
 
-    public Caravan findByName(String caravanName) {
+    public Optional<Caravan> findByName(String caravanName) {
         String statement = """
                 SELECT c1.id,
                        c1.name,
@@ -75,7 +76,7 @@ public class CaravanRepository {
 
         return this.jdbcClient.sql(statement)
                 .param(caravanName)
-                .query(rowMapper).single();
+                .query(rowMapper).optional();
     }
 }
 
