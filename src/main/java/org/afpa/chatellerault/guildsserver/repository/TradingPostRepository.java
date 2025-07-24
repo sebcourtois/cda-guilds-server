@@ -4,6 +4,7 @@ import lombok.NonNull;
 import org.afpa.chatellerault.guildsserver.entity.TradingPost;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.lang.Nullable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,28 +20,42 @@ public class TradingPostRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    public static TradingPost mapRow(@NonNull ResultSet row) throws SQLException {
+    public static TradingPost mapRow(@NonNull ResultSet row, @Nullable String columnPrefix) throws SQLException {
+        columnPrefix = (columnPrefix == null) ? "" : columnPrefix;
         return TradingPost.builder()
-                .id(row.getObject("id", UUID.class))
-                .name(row.getString("name"))
-                .posX(row.getInt("location_x"))
-                .posY(row.getInt("location_y"))
-                .population(row.getInt("population"))
-                .hostId(row.getObject("id_host", UUID.class))
+                .id(row.getObject(columnPrefix + "id", UUID.class))
+                .name(row.getString(columnPrefix + "name"))
+                .posX(row.getInt(columnPrefix + "location_x"))
+                .posY(row.getInt(columnPrefix + "location_y"))
+                .population(row.getInt(columnPrefix + "population"))
+                .hostId(row.getObject(columnPrefix + "id_host", UUID.class))
                 .build();
     }
 
-    public TradingPost create(TradingPost trading_post) {
+    public static TradingPost mapRow(@NonNull ResultSet row) throws SQLException {
+        return TradingPostRepository.mapRow(row, null);
+    }
+
+    public TradingPost create(TradingPost tradingPost) {
         String statement = """
-                INSERT INTO trading_post (name, location_x, location_y, population)
-                VALUES (?, ?, ?, ?) RETURNING *;
+                INSERT INTO trading_post (name, location_x, location_y, population, id_host)
+                VALUES (?, ?, ?, ?, ?) RETURNING *;
                 """;
+
         return this.jdbcClient.sql(statement)
-                .param(trading_post.getName())
-                .param(trading_post.getPosX())
-                .param(trading_post.getPosY())
-                .param(trading_post.getPopulation())
+                .param(tradingPost.getName())
+                .param(tradingPost.getPosX())
+                .param(tradingPost.getPosY())
+                .param(tradingPost.getPopulation())
+                .param(tradingPost.getHostId())
                 .query(rowMapper).single();
+    }
+
+    public UUID delete(TradingPost tradingPost) {
+        String statement = """
+                DELETE FROM trading_post WHERE id = ? RETURNING id;
+                """;
+        return this.jdbcClient.sql(statement).param(tradingPost.getId()).query(UUID.class).single();
     }
 
     public TradingPost findByName(String someName) {
@@ -57,13 +72,6 @@ public class TradingPostRepository {
         return this.jdbcClient.sql(statement)
                 .param(someId)
                 .query(rowMapper).single();
-    }
-
-    public UUID delete(TradingPost tradingPost) {
-        String statement = """
-                DELETE FROM trading_post WHERE id = ? RETURNING id;
-                """;
-        return this.jdbcClient.sql(statement).param(tradingPost.getId()).query(UUID.class).single();
     }
 }
 
