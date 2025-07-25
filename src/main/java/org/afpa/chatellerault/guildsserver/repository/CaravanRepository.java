@@ -3,7 +3,6 @@ package org.afpa.chatellerault.guildsserver.repository;
 import lombok.NonNull;
 import org.afpa.chatellerault.guildsserver.entity.Caravan;
 import org.afpa.chatellerault.guildsserver.entity.TradingPost;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.sql.ResultSet;
@@ -11,51 +10,31 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 
-public class CaravanRepository {
-
-    JdbcClient jdbcClient;
-    CaravanRowMapper rowMapper = new CaravanRowMapper();
+public class CaravanRepository extends BaseRepository<Caravan> {
 
     public CaravanRepository(JdbcClient jdbcClient) {
-        this.jdbcClient = jdbcClient;
+        super(jdbcClient);
     }
 
-    static public Caravan mapRow(ResultSet row) throws SQLException {
+    @Override
+    public Caravan mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
+        UUID destId;
+        try {
+            destId = res.getObject("destination.id", UUID.class);
+        } catch (SQLException e) {
+            destId = null;
+        }
         TradingPost destination = null;
-        UUID destId = row.getObject("destination.id", UUID.class);
         if (destId != null) {
-            destination = TradingPostRepository.mapRow(row, "destination.");
+            destination = TradingPostRepository.mapRow(res, "destination.");
         }
         return Caravan.builder()
-                .id(row.getObject("id", UUID.class))
-                .name(row.getString("name"))
-                .posX(row.getInt("location_x"))
-                .posY(row.getInt("location_y"))
+                .id(res.getObject("id", UUID.class))
+                .name(res.getString("name"))
+                .posX(res.getInt("location_x"))
+                .posY(res.getInt("location_y"))
                 .destination(destination)
                 .build();
-    }
-
-    public Caravan create(Caravan caravan) {
-        String statement = """
-                INSERT INTO caravan (name, location_x, location_y, destination)
-                VALUES (?, ?, ?, ?) RETURNING *;
-                """;
-
-        var destTradingPost = caravan.getDestination();
-
-        return this.jdbcClient.sql(statement)
-                .param(caravan.getName())
-                .param(caravan.getPosX())
-                .param(caravan.getPosY())
-                .param(destTradingPost != null ? destTradingPost.getId() : null)
-                .query(rowMapper).single();
-    }
-
-    public UUID delete(Caravan caravan) {
-        String statement = """
-                DELETE FROM caravan WHERE id = ? RETURNING id;
-                """;
-        return this.jdbcClient.sql(statement).param(caravan.getId()).query(UUID.class).single();
     }
 
     public Optional<Caravan> findByName(String caravanName) {
@@ -76,14 +55,6 @@ public class CaravanRepository {
 
         return this.jdbcClient.sql(statement)
                 .param(caravanName)
-                .query(rowMapper).optional();
-    }
-}
-
-class CaravanRowMapper implements RowMapper<Caravan> {
-
-    @Override
-    public Caravan mapRow(@NonNull ResultSet row, int rowNum) throws SQLException {
-        return CaravanRepository.mapRow(row);
+                .query(this).optional();
     }
 }

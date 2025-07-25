@@ -10,7 +10,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 @SpringBootApplication
@@ -28,9 +27,23 @@ public class GuildsServerApp implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        var carRepo = new CaravanRepository(this.jdbcClient);
-        var found = carRepo.findByName("Caravan 2");
-        System.out.println(found.orElse(null));
+        var tradePostRepo = new TradingPostRepository(this.jdbcClient);
+        var myTradePost = TradingPost.builder().name("Chatellerault").build();
+
+//        System.out.println(myTradePost.toTableRow());
+        myTradePost = tradePostRepo.create(myTradePost);
+//        System.out.println(myTradePost.toTableRow());
+
+        var caravanRepo = new CaravanRepository(this.jdbcClient);
+        var myCaravan = Caravan.builder().name("Tour de France").destination(myTradePost).build();
+
+        System.out.println(myCaravan.toTableRow());
+        myCaravan = caravanRepo.create(myCaravan);
+        System.out.println(myCaravan.toTableRow());
+
+
+//        caravanRepo.delete(myCaravan);
+//        tradePostRepo.delete(myTradePost);
     }
 
     private void _populateDatabase() {
