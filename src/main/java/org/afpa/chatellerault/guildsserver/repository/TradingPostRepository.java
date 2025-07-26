@@ -2,7 +2,6 @@ package org.afpa.chatellerault.guildsserver.repository;
 
 import lombok.NonNull;
 import org.afpa.chatellerault.guildsserver.entity.TradingPost;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.lang.Nullable;
 
@@ -12,13 +11,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 
-public class TradingPostRepository {
-
-    JdbcClient jdbcClient;
-    TradingPostRowMapper rowMapper = new TradingPostRowMapper();
+public class TradingPostRepository extends BaseRepository<TradingPost> {
 
     public TradingPostRepository(JdbcClient jdbcClient) {
-        this.jdbcClient = jdbcClient;
+        super(jdbcClient);
     }
 
     public static TradingPost mapRow(@NonNull ResultSet row, @Nullable String columnPrefix) throws SQLException {
@@ -37,34 +33,12 @@ public class TradingPostRepository {
         return TradingPostRepository.mapRow(row, null);
     }
 
-    public TradingPost create(TradingPost tradingPost) {
-        String statement = """
-                INSERT INTO trading_post (name, location_x, location_y, population, id_host)
-                VALUES (?, ?, ?, ?, ?) RETURNING *;
-                """;
-
-        return this.jdbcClient.sql(statement)
-                .param(tradingPost.getName())
-                .param(tradingPost.getPosX())
-                .param(tradingPost.getPosY())
-                .param(tradingPost.getPopulation())
-                .param(tradingPost.getHostId())
-                .query(rowMapper).single();
-    }
-
-    public UUID delete(TradingPost tradingPost) {
-        String statement = """
-                DELETE FROM trading_post WHERE id = ? RETURNING id;
-                """;
-        return this.jdbcClient.sql(statement).param(tradingPost.getId()).query(UUID.class).single();
-    }
-
     public Optional<TradingPost> findByName(String someName) {
         String statement = "SELECT * FROM trading_post WHERE name = ?";
 
         return this.jdbcClient.sql(statement)
                 .param(someName)
-                .query(rowMapper).optional();
+                .query(this).optional();
     }
 
     public Optional<TradingPost> findById(UUID someId) {
@@ -72,14 +46,12 @@ public class TradingPostRepository {
 
         return this.jdbcClient.sql(statement)
                 .param(someId)
-                .query(rowMapper).optional();
+                .query(this).optional();
     }
-}
-
-class TradingPostRowMapper implements RowMapper<TradingPost> {
 
     @Override
-    public TradingPost mapRow(@NonNull ResultSet row, int rowNum) throws SQLException {
-        return TradingPostRepository.mapRow(row);
+    public TradingPost mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
+        return TradingPostRepository.mapRow(res, null);
     }
 }
+
