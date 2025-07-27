@@ -15,7 +15,7 @@ public abstract class BaseRepository<E extends BaseEntity> implements RowMapper<
         this.jdbcClient = jdbcClient;
     }
 
-    public E create(E entity) {
+    public void create(E entity) {
         var tableRow = entity.toTableRow();
         var generatedFields = entity.tableFields().stream()
                 .filter(TableFieldSpec::isGenerated)
@@ -32,9 +32,11 @@ public abstract class BaseRepository<E extends BaseEntity> implements RowMapper<
                 String.join("\", \"", tableFields),
                 String.join(", ", valuePlaceholders)
         );
-        return this.jdbcClient.sql(sql)
+        var rowData = this.jdbcClient.sql(sql)
                 .paramSource(tableRow.toSqlParamSource())
-                .query(this).single();
+                .query(entity).single();
+
+        entity.loadData(rowData);
     }
 
     public int delete(E entity) {

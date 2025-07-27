@@ -30,16 +30,16 @@ public class GuildsServerApp implements ApplicationRunner {
         var tradePostRepo = new TradingPostRepository(this.jdbcClient);
         var myTradePost = TradingPost.builder().name("Chatellerault").build();
 
-        System.out.println(myTradePost.toTableRow());
-        myTradePost = tradePostRepo.create(myTradePost);
-        System.out.println(myTradePost.toTableRow());
-
         var caravanRepo = new CaravanRepository(this.jdbcClient);
         var myCaravan = Caravan.builder().name("Tour de France").destination(myTradePost).build();
 
-        System.out.println(myCaravan.toTableRow());
-        myCaravan = caravanRepo.create(myCaravan);
-        System.out.println(myCaravan.toTableRow());
+        System.out.println(myTradePost);
+        tradePostRepo.create(myTradePost);
+        System.out.println(myTradePost);
+
+        System.out.println(myCaravan);
+        caravanRepo.create(myCaravan);
+        System.out.println(myCaravan);
 
         caravanRepo.delete(myCaravan);
         tradePostRepo.delete(myTradePost);
@@ -58,7 +58,7 @@ public class GuildsServerApp implements ApplicationRunner {
                     .name(tpName)
                     .hostId(UUID.fromString("7b1f7a60-4eec-43a7-aad8-23db0edcfa07"))
                     .build();
-            tradingPost = tpRepo.create(tradingPost);
+            tpRepo.create(tradingPost);
             tradePostCount++;
 //            tradingPosts.add(tradingPost);
 

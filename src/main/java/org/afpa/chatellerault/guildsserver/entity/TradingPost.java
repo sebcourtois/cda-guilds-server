@@ -16,9 +16,9 @@ public class TradingPost extends BaseEntity {
     String name;
 
     @lombok.Builder.Default
-    int posX = 0;
+    long posX = 0;
     @lombok.Builder.Default
-    int posY = 0;
+    long posY = 0;
     @lombok.Builder.Default
     int population = 0;
 
@@ -32,26 +32,24 @@ public class TradingPost extends BaseEntity {
     @Override
     public List<TableFieldSpec> tableFields() {
         return List.of(
-                TableFieldSpec.builder("id").
-                        getter(this::getId)
-                        .isPrimaryKey(true)
-                        .isGenerated(true)
-                        .build(),
-                TableFieldSpec.builder("name")
-                        .getter(this::getName)
-                        .build(),
-                TableFieldSpec.builder("location_x")
-                        .getter(this::getPosX)
-                        .build(),
-                TableFieldSpec.builder("location_y")
-                        .getter(this::getPosY)
-                        .build(),
-                TableFieldSpec.builder("population")
-                        .getter(this::getPopulation)
-                        .build(),
-                TableFieldSpec.builder("id_host")
-                        .getter(this::getHostId)
-                        .build()
+                TableFieldSpec.builder("id",
+                        UUID.class, this::getId, val -> this.setId((UUID) val)
+                ).isPrimaryKey(true).isGenerated(true).build(),
+                TableFieldSpec.builder("name",
+                        String.class, this::getName, val -> this.setName((String) val)
+                ).build(),
+                TableFieldSpec.builder("location_x",
+                        Long.class, this::getPosX, val -> this.setPosX((long) val)
+                ).build(),
+                TableFieldSpec.builder("location_y",
+                        Long.class, this::getPosY, val -> this.setPosY((long) val)
+                ).build(),
+                TableFieldSpec.builder("population",
+                        Integer.class, this::getPopulation, val -> this.setPopulation((int) val)
+                ).build(),
+                TableFieldSpec.builder("id_host",
+                        UUID.class, this::getHostId, val -> this.setHostId((UUID) val)
+                ).build()
         );
     }
 }

@@ -2,14 +2,19 @@ package org.afpa.chatellerault.guildsserver.entity;
 
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
 import org.afpa.chatellerault.guildsserver.util.TableRowData;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.NonNull;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
-public abstract class BaseEntity {
+public abstract class BaseEntity implements RowMapper<TableRowData> {
     public abstract String tableName();
-   public abstract List<TableFieldSpec> tableFields();
+
+    public abstract List<TableFieldSpec> tableFields();
 
     public List<TableFieldSpec> primaryFields() throws NoSuchElementException {
         var pkFields = this.tableFields().stream()
@@ -43,4 +48,27 @@ public abstract class BaseEntity {
         }
         return tableRow;
     }
+
+    @Override
+    public TableRowData mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
+        var fieldNames = this.tableFields().stream()
+                .map(TableFieldSpec::getName)
+                .toList();
+
+        var tableRow = new TableRowData(fieldNames);
+        for (var fieldSpec : this.tableFields()) {
+            var fieldName = fieldSpec.getName();
+            tableRow.set(fieldName, res.getObject(fieldName, fieldSpec.getJavaType()));
+        }
+        return tableRow;
+    }
+
+    public void loadData(TableRowData tableRow) {
+        for (var fieldSpec : this.tableFields()) {
+            var fieldName = fieldSpec.getName();
+            var fieldSetter = fieldSpec.getSetter();
+            fieldSetter.accept(tableRow.get(fieldName));
+        }
+    }
+
 }
