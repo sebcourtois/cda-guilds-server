@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS "caravan"
     name        varchar(255) NOT NULL UNIQUE,
     location_x  bigint       NOT NULL DEFAULT 0,
     location_y  bigint       NOT NULL DEFAULT 0,
-    destination uuid REFERENCES "trading_post" (id)
+    id_destination uuid REFERENCES "trading_post" (id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
 );
