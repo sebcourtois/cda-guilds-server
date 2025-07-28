@@ -34,9 +34,9 @@ public abstract class BaseRepository<E extends BaseEntity> implements RowMapper<
         );
         var rowData = this.jdbcClient.sql(sql)
                 .paramSource(tableRow.toSqlParamSource())
-                .query(entity).single();
+                .query(entity.tableRowMapper()).single();
 
-        entity.loadData(rowData);
+        entity.loadTableRow(rowData);
     }
 
     public int delete(E entity) {

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
-public abstract class BaseEntity implements RowMapper<TableRowData> {
+public abstract class BaseEntity {
     public abstract String tableName();
 
     public abstract List<TableFieldSpec> tableFields();
@@ -49,21 +49,11 @@ public abstract class BaseEntity implements RowMapper<TableRowData> {
         return tableRow;
     }
 
-    @Override
-    public TableRowData mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
-        var fieldNames = this.tableFields().stream()
-                .map(TableFieldSpec::getName)
-                .toList();
-
-        var tableRow = new TableRowData(fieldNames);
-        for (var fieldSpec : this.tableFields()) {
-            var fieldName = fieldSpec.getName();
-            tableRow.set(fieldName, res.getObject(fieldName, fieldSpec.getJavaType()));
-        }
-        return tableRow;
+    public TableRowMapper tableRowMapper() {
+        return new TableRowMapper(this.tableFields());
     }
 
-    public void loadData(TableRowData tableRow) {
+    public void loadTableRow(TableRowData tableRow) {
         for (var fieldSpec : this.tableFields()) {
             var fieldName = fieldSpec.getName();
             var fieldSetter = fieldSpec.getSetter();
@@ -71,4 +61,26 @@ public abstract class BaseEntity implements RowMapper<TableRowData> {
         }
     }
 
+    public static class TableRowMapper implements RowMapper<TableRowData> {
+        private final List<TableFieldSpec> tableFields;
+
+        public TableRowMapper(List<TableFieldSpec> tableFields) {
+            this.tableFields = tableFields;
+        }
+
+        @Override
+        public TableRowData mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
+            var fieldNames = this.tableFields.stream()
+                    .map(TableFieldSpec::getName)
+                    .toList();
+
+            var tableRow = new TableRowData(fieldNames);
+            for (var fieldSpec : this.tableFields) {
+                var fieldName = fieldSpec.getName();
+                tableRow.set(fieldName, res.getObject(fieldName, fieldSpec.getJavaType()));
+            }
+            return tableRow;
+        }
+    }
 }
+
