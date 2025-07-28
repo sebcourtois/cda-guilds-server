@@ -1,8 +1,6 @@
-package org.afpa.chatellerault.guildsserver.repository;
+package org.afpa.chatellerault.guildsserver.util;
 
 import lombok.NonNull;
-import org.afpa.chatellerault.guildsserver.entity.BaseEntity;
-import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 

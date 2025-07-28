@@ -1,6 +1,7 @@
 package org.afpa.chatellerault.guildsserver.entity;
 
 import lombok.*;
+import org.afpa.chatellerault.guildsserver.util.BaseEntity;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
 import org.springframework.lang.Nullable;
 

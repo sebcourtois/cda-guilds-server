@@ -1,6 +1,7 @@
 package org.afpa.chatellerault.guildsserver.repository;
 
 import org.afpa.chatellerault.guildsserver.entity.Caravan;
+import org.afpa.chatellerault.guildsserver.util.BaseRepository;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.util.Optional;

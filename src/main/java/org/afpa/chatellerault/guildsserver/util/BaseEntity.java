@@ -1,7 +1,5 @@
-package org.afpa.chatellerault.guildsserver.entity;
+package org.afpa.chatellerault.guildsserver.util;
 
-import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
-import org.afpa.chatellerault.guildsserver.util.TableRowData;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.lang.NonNull;
 

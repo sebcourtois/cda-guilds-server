@@ -3,6 +3,7 @@ package org.afpa.chatellerault.guildsserver.entity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.afpa.chatellerault.guildsserver.util.BaseEntity;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
 
 import java.util.List;
