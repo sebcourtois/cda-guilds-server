@@ -61,6 +61,5 @@ public class Caravan extends BaseEntity {
         if (this.destination != null && !this.destination.getId().equals(this.destinationId)) {
             this.destination = null;
         }
-
     }
 }
