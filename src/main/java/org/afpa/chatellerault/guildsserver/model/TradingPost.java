@@ -1,4 +1,4 @@
-package org.afpa.chatellerault.guildsserver.entity;
+package org.afpa.chatellerault.guildsserver.model;
 
 import lombok.Builder;
 import lombok.Data;

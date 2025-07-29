@@ -1,6 +1,6 @@
 package org.afpa.chatellerault.guildsserver.repository;
 
-import org.afpa.chatellerault.guildsserver.entity.TradingPost;
+import org.afpa.chatellerault.guildsserver.model.TradingPost;
 import org.afpa.chatellerault.guildsserver.util.BaseRepository;
 import org.springframework.jdbc.core.simple.JdbcClient;
 

@@ -1,7 +1,7 @@
 package org.afpa.chatellerault.guildsserver;
 
-import org.afpa.chatellerault.guildsserver.entity.Caravan;
-import org.afpa.chatellerault.guildsserver.entity.TradingPost;
+import org.afpa.chatellerault.guildsserver.model.Caravan;
+import org.afpa.chatellerault.guildsserver.model.TradingPost;
 import org.afpa.chatellerault.guildsserver.repository.CaravanRepository;
 import org.afpa.chatellerault.guildsserver.repository.TradingPostRepository;
 import org.springframework.boot.ApplicationArguments;
