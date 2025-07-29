@@ -6,6 +6,8 @@ import org.afpa.chatellerault.guildsserver.repository.CaravanRepository;
 import org.afpa.chatellerault.guildsserver.repository.TradingPostRepository;
 import org.afpa.chatellerault.guildsserver.service.Caravans;
 import org.afpa.chatellerault.guildsserver.service.TradingPosts;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -16,6 +18,7 @@ import java.util.NoSuchElementException;
 
 @SpringBootApplication
 public class GuildsServerApp implements ApplicationRunner {
+    private static final Logger LOG = LogManager.getLogger(GuildsServerApp.class);
 
     JdbcClient jdbcClient;
 
@@ -36,15 +39,15 @@ public class GuildsServerApp implements ApplicationRunner {
                 .name("Chatellerault")
                 .build()
         );
-        System.out.println(myTradePost);
+        LOG.info(myTradePost);
 
         var caravanName = "Tour de France";
         var myCaravan = Caravans.create(CaravanData.builder()
                 .name(caravanName)
-//                .destinationId(myTradePost.getId())
+                .destinationId(myTradePost.getId())
                 .build()
         );
-        System.out.println(myCaravan);
+        LOG.info(myCaravan);
         try {
             var foundCaravan = Caravans.getByName(caravanName);
             var caravanDest = foundCaravan.getDestination();
