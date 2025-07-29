@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
-public abstract class EntityData {
+public abstract class BaseEntityData {
     public abstract String tableName();
 
     public abstract List<TableFieldSpec> tableFields();

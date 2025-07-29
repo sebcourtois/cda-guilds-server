@@ -1,10 +1,10 @@
 package org.afpa.chatellerault.guildsserver;
 
 import org.afpa.chatellerault.guildsserver.model.CaravanData;
-import org.afpa.chatellerault.guildsserver.model.TradingPost;
 import org.afpa.chatellerault.guildsserver.model.TradingPostData;
 import org.afpa.chatellerault.guildsserver.repository.CaravanRepository;
 import org.afpa.chatellerault.guildsserver.repository.TradingPostRepository;
+import org.afpa.chatellerault.guildsserver.service.Caravans;
 import org.afpa.chatellerault.guildsserver.service.TradingPosts;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -30,22 +30,22 @@ public class GuildsServerApp implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         TradingPosts.setRepository(new TradingPostRepository(this.jdbcClient));
+        Caravans.setRepository(new CaravanRepository(this.jdbcClient));
 
-
-
-//        var caravanRepo = new CaravanRepository(this.jdbcClient);
-//        var myCaravan = CaravanData.builder().name("Tour de France").destination(myTradePost).build();
-
-        var data = TradingPostData.builder().name("Chatellerault").build();
-        System.out.println(data);
-        var myTradePost = TradingPosts.create(data);
+        var myTradePost = TradingPosts.create(TradingPostData.builder()
+                .name("Chatellerault")
+                .build()
+        );
         System.out.println(myTradePost);
 
-//        System.out.println(myCaravan);
-//        caravanRepo.create(myCaravan);
-//        System.out.println(myCaravan);
-//
-//        caravanRepo.delete(myCaravan);
+        var myCaravan = Caravans.create(CaravanData.builder()
+                .name("Tour de France")
+                .destination(myTradePost.data)
+                .build()
+        );
+        System.out.println(myCaravan);
+
+        Caravans.delete(myCaravan);
         TradingPosts.delete(myTradePost);
     }
 

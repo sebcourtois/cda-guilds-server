@@ -10,7 +10,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class CaravanData extends EntityData {
+public class CaravanData extends BaseEntityData {
     UUID id;
     String name;
 

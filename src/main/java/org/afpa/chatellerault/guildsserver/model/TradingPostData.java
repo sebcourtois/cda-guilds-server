@@ -11,7 +11,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class TradingPostData extends EntityData {
+public class TradingPostData extends BaseEntityData {
     UUID id;
     String name;
 

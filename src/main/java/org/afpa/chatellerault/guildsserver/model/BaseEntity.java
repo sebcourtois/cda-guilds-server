@@ -6,7 +6,7 @@ import org.afpa.chatellerault.guildsserver.util.TableRowEntity;
 
 import java.util.List;
 
-public abstract class BaseEntity<D extends EntityData, R extends BaseRepository<D>> implements TableRowEntity {
+public abstract class BaseEntity<D extends BaseEntityData, R extends BaseRepository<D>> implements TableRowEntity {
     public final D data;
     public final R repository;
 
@@ -15,12 +15,14 @@ public abstract class BaseEntity<D extends EntityData, R extends BaseRepository<
         this.repository = repository;
     }
 
+    public int delete() {
+        return this.repository.delete(this.data);
+    }
 
     @Override
     public String tableName() {
         return this.data.tableName();
     }
-
 
     @Override
     public List<TableFieldSpec> tableFields() {

@@ -17,5 +17,4 @@ public class TradingPosts {
     public static int delete(TradingPost tradingPost) {
         return repository.delete(tradingPost.data);
     }
-
 }
