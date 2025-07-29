@@ -1,8 +1,9 @@
 package org.afpa.chatellerault.guildsserver.model;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
-import org.springframework.lang.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,10 +20,7 @@ public class CaravanData extends BaseEntityData {
     @Builder.Default
     long posY = 0;
 
-    @Getter(AccessLevel.NONE)
-    @Setter(AccessLevel.NONE)
     UUID destinationId;
-    TradingPostData destination;
 
     @Override
     public String tableName() {
@@ -50,16 +48,5 @@ public class CaravanData extends BaseEntityData {
                         UUID.class, this::getDestinationId, val -> this.setDestinationId((UUID) val)
                 ).build()
         );
-    }
-
-    private @Nullable UUID getDestinationId() {
-        return (this.destination != null) ? this.destination.getId() : this.destinationId;
-    }
-
-    public void setDestinationId(UUID destinationId) {
-        this.destinationId = destinationId;
-        if (this.destination != null && !this.destination.getId().equals(this.destinationId)) {
-            this.destination = null;
-        }
     }
 }

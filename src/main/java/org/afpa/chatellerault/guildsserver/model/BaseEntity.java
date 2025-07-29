@@ -1,22 +1,22 @@
 package org.afpa.chatellerault.guildsserver.model;
 
+import lombok.Getter;
 import org.afpa.chatellerault.guildsserver.repository.BaseRepository;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
 import org.afpa.chatellerault.guildsserver.util.TableRowEntity;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
 public abstract class BaseEntity<D extends BaseEntityData, R extends BaseRepository<D>> implements TableRowEntity {
-    public final D data;
-    public final R repository;
+    @Getter
+    protected final D data;
+    @Getter
+    protected final R repository;
 
     public BaseEntity(D data, R repository) {
         this.data = data;
         this.repository = repository;
-    }
-
-    public int delete() {
-        return this.repository.delete(this.data);
     }
 
     @Override

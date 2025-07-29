@@ -5,6 +5,8 @@ import org.afpa.chatellerault.guildsserver.model.Caravan;
 import org.afpa.chatellerault.guildsserver.model.CaravanData;
 import org.afpa.chatellerault.guildsserver.repository.CaravanRepository;
 
+import java.util.NoSuchElementException;
+
 public class Caravans {
     @Setter
     private static CaravanRepository repository;
@@ -15,6 +17,17 @@ public class Caravans {
     }
 
     public static int delete(Caravan caravan) {
-        return repository.delete(caravan.data);
+        return repository.delete(caravan.getData());
     }
+
+    public static Caravan getByName(String someName) throws NoSuchElementException {
+        var caravanData = repository.findByName(someName);
+
+        if (caravanData.isEmpty()) throw new NoSuchElementException(
+                "No such %s named: '%s'".formatted(Caravan.class.getName(), someName)
+        );
+
+        return new Caravan(caravanData.get(), repository);
+    }
+
 }
