@@ -1,6 +1,8 @@
-package org.afpa.chatellerault.guildsserver.util;
+package org.afpa.chatellerault.guildsserver.repository;
 
 import lombok.NonNull;
+import org.afpa.chatellerault.guildsserver.model.EntityData;
+import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
@@ -9,7 +11,7 @@ import java.sql.SQLException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public abstract class BaseRepository<E extends BaseEntity> {
+public abstract class BaseRepository<E extends EntityData> {
 
     public final JdbcClient jdbcClient;
 
@@ -56,7 +58,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return new EntityRowMapper<>(supplier);
     }
 
-    public static class EntityRowMapper<E extends BaseEntity> implements RowMapper<E> {
+    public static class EntityRowMapper<E extends EntityData> implements RowMapper<E> {
         private final Supplier<E> supplier;
 
         public EntityRowMapper(Supplier<E> supplier) {

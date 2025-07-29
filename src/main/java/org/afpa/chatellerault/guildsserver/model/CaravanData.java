@@ -1,7 +1,6 @@
 package org.afpa.chatellerault.guildsserver.model;
 
 import lombok.*;
-import org.afpa.chatellerault.guildsserver.util.BaseEntity;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
 import org.springframework.lang.Nullable;
 
@@ -11,7 +10,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class Caravan extends BaseEntity {
+public class CaravanData extends EntityData {
     UUID id;
     String name;
 
@@ -23,7 +22,7 @@ public class Caravan extends BaseEntity {
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     UUID destinationId;
-    TradingPost destination;
+    TradingPostData destination;
 
     @Override
     public String tableName() {

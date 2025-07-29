@@ -1,9 +1,11 @@
 package org.afpa.chatellerault.guildsserver;
 
-import org.afpa.chatellerault.guildsserver.model.Caravan;
+import org.afpa.chatellerault.guildsserver.model.CaravanData;
 import org.afpa.chatellerault.guildsserver.model.TradingPost;
+import org.afpa.chatellerault.guildsserver.model.TradingPostData;
 import org.afpa.chatellerault.guildsserver.repository.CaravanRepository;
 import org.afpa.chatellerault.guildsserver.repository.TradingPostRepository;
+import org.afpa.chatellerault.guildsserver.service.TradingPosts;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -27,22 +29,24 @@ public class GuildsServerApp implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        var tradePostRepo = new TradingPostRepository(this.jdbcClient);
-        var myTradePost = TradingPost.builder().name("Chatellerault").build();
+        TradingPosts.setRepository(new TradingPostRepository(this.jdbcClient));
 
-        var caravanRepo = new CaravanRepository(this.jdbcClient);
-        var myCaravan = Caravan.builder().name("Tour de France").destination(myTradePost).build();
 
+
+//        var caravanRepo = new CaravanRepository(this.jdbcClient);
+//        var myCaravan = CaravanData.builder().name("Tour de France").destination(myTradePost).build();
+
+        var data = TradingPostData.builder().name("Chatellerault").build();
+        System.out.println(data);
+        var myTradePost = TradingPosts.create(data);
         System.out.println(myTradePost);
-        tradePostRepo.create(myTradePost);
-        System.out.println(myTradePost);
 
-        System.out.println(myCaravan);
-        caravanRepo.create(myCaravan);
-        System.out.println(myCaravan);
-
-        caravanRepo.delete(myCaravan);
-        tradePostRepo.delete(myTradePost);
+//        System.out.println(myCaravan);
+//        caravanRepo.create(myCaravan);
+//        System.out.println(myCaravan);
+//
+//        caravanRepo.delete(myCaravan);
+        TradingPosts.delete(myTradePost);
     }
 
     private void _populateDatabase() {
@@ -54,7 +58,7 @@ public class GuildsServerApp implements ApplicationRunner {
         int tradePostCount = 0;
         for (var tp = 0; tp < 4; tp++) {
             var tpName = String.format("Trading Post %s", tradePostCount + 1);
-            var tradingPost = TradingPost.builder()
+            var tradingPost = TradingPostData.builder()
                     .name(tpName)
                     .hostId(UUID.fromString("7b1f7a60-4eec-43a7-aad8-23db0edcfa07"))
                     .build();
@@ -64,7 +68,7 @@ public class GuildsServerApp implements ApplicationRunner {
 
             for (var car = 0; car < 3; car++) {
                 var caravanName = String.format("Caravan %s", caravanCount + 1);
-                var caravan = Caravan.builder()
+                var caravan = CaravanData.builder()
                         .name(caravanName)
                         .destination(tradingPost)
                         .build();

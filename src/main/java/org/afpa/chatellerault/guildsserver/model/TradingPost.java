@@ -1,56 +1,60 @@
 package org.afpa.chatellerault.guildsserver.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.afpa.chatellerault.guildsserver.util.BaseEntity;
-import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
+import org.afpa.chatellerault.guildsserver.repository.TradingPostRepository;
 
-import java.util.List;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
-@Builder
-public class TradingPost extends BaseEntity {
-    UUID id;
-    String name;
+public class TradingPost extends BaseEntity<TradingPostData, TradingPostRepository> {
 
-    @lombok.Builder.Default
-    long posX = 0;
-    @lombok.Builder.Default
-    long posY = 0;
-    @lombok.Builder.Default
-    int population = 0;
-
-    UUID hostId;
-
-    @Override
-    public String tableName() {
-        return "trading_post";
+    public TradingPost(TradingPostData data, TradingPostRepository repository) {
+        super(data, repository);
     }
 
-    @Override
-    public List<TableFieldSpec> tableFields() {
-        return List.of(
-                TableFieldSpec.builder("id",
-                        UUID.class, this::getId, val -> this.setId((UUID) val)
-                ).isPrimaryKey(true).isGenerated(true).build(),
-                TableFieldSpec.builder("name",
-                        String.class, this::getName, val -> this.setName((String) val)
-                ).build(),
-                TableFieldSpec.builder("location_x",
-                        Long.class, this::getPosX, val -> this.setPosX((long) val)
-                ).build(),
-                TableFieldSpec.builder("location_y",
-                        Long.class, this::getPosY, val -> this.setPosY((long) val)
-                ).build(),
-                TableFieldSpec.builder("population",
-                        Integer.class, this::getPopulation, val -> this.setPopulation((int) val)
-                ).build(),
-                TableFieldSpec.builder("id_host",
-                        UUID.class, this::getHostId, val -> this.setHostId((UUID) val)
-                ).build()
-        );
+    public UUID getId() {
+        return this.data.getId();
+    }
+
+    public void setId(UUID id) {
+        this.data.setId(id);
+    }
+
+    public long getPosX() {
+        return this.data.getPosX();
+    }
+
+    public void setPosX(long posX) {
+        this.data.setPosX(posX);
+    }
+
+    public String getName() {
+        return this.data.getName();
+    }
+
+    public void setName(String name) {
+        this.data.setName(name);
+    }
+
+    public long getPosY() {
+        return this.data.getPosY();
+    }
+
+    public void setPosY(long posY) {
+        this.data.setPosY(posY);
+    }
+
+    public int getPopulation() {
+        return this.data.getPopulation();
+    }
+
+    public void setPopulation(int population) {
+        this.data.setPopulation(population);
+    }
+
+    public UUID getHostId() {
+        return this.data.getHostId();
+    }
+
+    public void setHostId(UUID hostId) {
+        this.data.setHostId(hostId);
     }
 }
