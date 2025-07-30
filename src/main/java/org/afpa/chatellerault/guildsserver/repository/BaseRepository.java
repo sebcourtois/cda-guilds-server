@@ -2,13 +2,14 @@ package org.afpa.chatellerault.guildsserver.repository;
 
 import lombok.NonNull;
 import org.afpa.chatellerault.guildsserver.model.BaseEntityData;
-import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -22,24 +23,23 @@ public abstract class BaseRepository<D extends BaseEntityData> {
     }
 
     public void create(D entityData) {
-        var tableRow = entityData.toTableRow();
-        var generatedFields = entityData.tableFields().stream()
-                .filter(TableFieldSpec::isGenerated)
-                .map(TableFieldSpec::getName)
-                .toList();
-        if (!generatedFields.isEmpty()) generatedFields.forEach(tableRow::removeField);
-
-        var tableFields = tableRow.getFields();
-        var valuePlaceholders = tableFields.stream().map(":%s"::formatted).toList();
+        var sqlParamSource = new MapSqlParameterSource();
+        entityData.tableFields().stream()
+                .filter(field -> !field.isGenerated())
+                .forEach(field -> sqlParamSource.addValue(
+                        field.getName(), field.getGetter().get()
+                ));
+        var fieldNames = List.of(sqlParamSource.getParameterNames());
+        var valuePlaceholders = fieldNames.stream().map(":%s"::formatted).toList();
         String sql = """
                 INSERT INTO "%s" ("%s") VALUES (%s) RETURNING *;
                 """.formatted(
                 entityData.tableName(),
-                String.join("\", \"", tableFields),
+                String.join("\", \"", fieldNames),
                 String.join(", ", valuePlaceholders)
         );
         var rowData = this.jdbcClient.sql(sql)
-                .paramSource(tableRow.toSqlParamSource())
+                .paramSource(sqlParamSource)
                 .query(entityData.tableRowMapper()).single();
 
         entityData.loadTableRow(rowData);

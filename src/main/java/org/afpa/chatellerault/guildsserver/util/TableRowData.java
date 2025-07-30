@@ -1,7 +1,5 @@
 package org.afpa.chatellerault.guildsserver.util;
 
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -55,16 +53,6 @@ public class TableRowData {
                         this.fields::get,
                         this.values::get
                 ));
-    }
-
-    public MapSqlParameterSource toSqlParamSource() {
-        var paramSource = new MapSqlParameterSource();
-        IntStream.range(0, this.fields.size()).forEach(
-                i -> paramSource.addValue(
-                        this.fields.get(i),
-                        this.values.get(i).orElse(null)
-                ));
-        return paramSource;
     }
 
     @Override
