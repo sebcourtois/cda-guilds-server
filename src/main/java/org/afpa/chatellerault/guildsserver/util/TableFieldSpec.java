@@ -7,6 +7,7 @@ import lombok.NonNull;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+
 @Data
 @Builder(builderMethodName = "")
 public class TableFieldSpec {

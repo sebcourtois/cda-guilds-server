@@ -5,13 +5,14 @@ import org.afpa.chatellerault.guildsserver.model.Caravan;
 import org.afpa.chatellerault.guildsserver.model.CaravanData;
 import org.afpa.chatellerault.guildsserver.repository.CaravanRepository;
 
+import java.sql.SQLException;
 import java.util.NoSuchElementException;
 
 public class Caravans {
     @Setter
     private static CaravanRepository repository;
 
-    public static Caravan create(CaravanData data) {
+    public static Caravan create(CaravanData data) throws SQLException {
         repository.create(data);
         return new Caravan(data, repository);
     }

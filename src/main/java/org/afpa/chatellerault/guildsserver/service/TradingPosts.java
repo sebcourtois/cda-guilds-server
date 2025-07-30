@@ -5,6 +5,7 @@ import org.afpa.chatellerault.guildsserver.model.TradingPost;
 import org.afpa.chatellerault.guildsserver.model.TradingPostData;
 import org.afpa.chatellerault.guildsserver.repository.TradingPostRepository;
 
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ public class TradingPosts {
     @Setter
     private static TradingPostRepository repository;
 
-    public static TradingPost create(TradingPostData data) {
+    public static TradingPost create(TradingPostData data) throws SQLException {
         repository.create(data);
         return new TradingPost(data, repository);
     }
@@ -25,5 +26,4 @@ public class TradingPosts {
         var tradingPostData = repository.findById(someId);
         return tradingPostData.map(data -> new TradingPost(data, repository));
     }
-
 }
