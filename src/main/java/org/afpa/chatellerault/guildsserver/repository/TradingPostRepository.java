@@ -2,11 +2,12 @@ package org.afpa.chatellerault.guildsserver.repository;
 
 import org.afpa.chatellerault.guildsserver.model.TradingPostData;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
-
+@Repository
 public class TradingPostRepository extends BaseRepository<TradingPostData> {
 
     public TradingPostRepository(JdbcClient jdbcClient) {
