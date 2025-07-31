@@ -4,9 +4,11 @@ import lombok.Setter;
 import org.afpa.chatellerault.guildsserver.model.HostServer;
 import org.afpa.chatellerault.guildsserver.model.HostServerData;
 import org.afpa.chatellerault.guildsserver.repository.HostServerRepository;
+import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 
+@Service
 public class HostServers {
     @Setter
     private static HostServerRepository repository;

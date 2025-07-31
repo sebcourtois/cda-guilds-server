@@ -4,10 +4,12 @@ import lombok.Setter;
 import org.afpa.chatellerault.guildsserver.model.Caravan;
 import org.afpa.chatellerault.guildsserver.model.CaravanData;
 import org.afpa.chatellerault.guildsserver.repository.CaravanRepository;
+import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 
+@Service
 public class Caravans {
     @Setter
     private static CaravanRepository repository;
