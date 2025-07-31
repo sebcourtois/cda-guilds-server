@@ -1,7 +1,7 @@
 package org.afpa.chatellerault.guildsserver.repository;
 
 import lombok.NonNull;
-import org.afpa.chatellerault.guildsserver.model.BaseEntityData;
+import org.afpa.chatellerault.guildsserver.util.TableMappedData;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
 import org.postgresql.util.PGobject;
 import org.springframework.jdbc.core.RowMapper;
@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Repository
-public abstract class BaseRepository<D extends BaseEntityData> {
+public abstract class BaseRepository<D extends TableMappedData> {
 
     public final JdbcClient jdbcClient;
 
@@ -66,7 +66,7 @@ public abstract class BaseRepository<D extends BaseEntityData> {
         return new EntityRowMapper<>(supplier);
     }
 
-    public static class EntityRowMapper<E extends BaseEntityData> implements RowMapper<E> {
+    public static class EntityRowMapper<E extends TableMappedData> implements RowMapper<E> {
         private final Supplier<E> supplier;
 
         public EntityRowMapper(Supplier<E> supplier) {
@@ -85,7 +85,6 @@ public abstract class BaseRepository<D extends BaseEntityData> {
     public static class PGobjectMapper {
         public Object mapValue(Object value) throws SQLException {
             if (value instanceof InetAddress) {
-                System.out.println(((InetAddress) value).getHostName());
                 PGobject inet = new PGobject();
                 inet.setType("inet");
                 inet.setValue(((InetAddress) value).getHostName());

@@ -1,7 +1,5 @@
-package org.afpa.chatellerault.guildsserver.model;
+package org.afpa.chatellerault.guildsserver.util;
 
-import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
-import org.afpa.chatellerault.guildsserver.util.TableRowData;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.lang.NonNull;
 
@@ -11,9 +9,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
-public abstract class BaseEntityData {
-    public abstract String tableName();
+public abstract class TableMappedData {
 
+    public abstract String tableName();
     public abstract List<TableFieldSpec> tableFields();
 
     public List<TableFieldSpec> primaryFields() throws NoSuchElementException {

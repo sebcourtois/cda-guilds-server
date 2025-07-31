@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
+import org.afpa.chatellerault.guildsserver.util.TableMappedData;
 
 import java.net.InetAddress;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class HostServerData extends BaseEntityData {
+public class HostServerData extends TableMappedData {
     UUID id;
     InetAddress ipAddress;
     int port;
