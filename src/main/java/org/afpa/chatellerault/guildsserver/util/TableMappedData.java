@@ -33,12 +33,12 @@ public interface TableMappedData {
                 .toList();
     }
 
-    default TableRowData toTableRow() {
+    default TableRowMap toTableRow() {
         var fieldNames = this.tableFields().stream()
                 .map(TableFieldSpec::getName)
                 .toList();
 
-        var tableRow = new TableRowData(fieldNames);
+        var tableRow = new TableRowMap(fieldNames);
         for (var fieldSpec : this.tableFields()) {
             var fieldGetter = fieldSpec.getGetter();
             if (fieldGetter != null) {
@@ -52,7 +52,7 @@ public interface TableMappedData {
         return new TableRowMapper(this.tableFields());
     }
 
-    default void loadTableRow(TableRowData tableRow) {
+    default void loadTableRow(TableRowMap tableRow) {
         for (var fieldSpec : this.tableFields()) {
             var fieldName = fieldSpec.getName();
             var fieldSetter = fieldSpec.getSetter();
@@ -60,7 +60,7 @@ public interface TableMappedData {
         }
     }
 
-    class TableRowMapper implements RowMapper<TableRowData> {
+    class TableRowMapper implements RowMapper<TableRowMap> {
         private final List<TableFieldSpec> tableFields;
 
         public TableRowMapper(List<TableFieldSpec> tableFields) {
@@ -68,17 +68,17 @@ public interface TableMappedData {
         }
 
         @Override
-        public TableRowData mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
+        public TableRowMap mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
             var fieldNames = this.tableFields.stream()
                     .map(TableFieldSpec::getName)
                     .toList();
 
-            var tableRow = new TableRowData(fieldNames);
+            var rowMap = new TableRowMap(fieldNames);
             for (var fieldSpec : this.tableFields) {
                 var fieldName = fieldSpec.getName();
-                tableRow.set(fieldName, res.getObject(fieldName, fieldSpec.getJavaType()));
+                rowMap.set(fieldName, res.getObject(fieldName, fieldSpec.getJavaType()));
             }
-            return tableRow;
+            return rowMap;
         }
     }
 }

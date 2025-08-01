@@ -1,15 +1,16 @@
 package org.afpa.chatellerault.guildsserver.util;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class TableRowData {
+public class TableRowMap implements Serializable {
     @lombok.Getter
     private final ArrayList<String> fields;
     private final ArrayList<Optional<Object>> values;
 
-    public TableRowData(List<String> fields) {
+    public TableRowMap(List<String> fields) {
         this.fields = new ArrayList<>(fields);
         this.values = fields.stream()
                 .map(field -> Optional.empty())
@@ -21,7 +22,7 @@ public class TableRowData {
         return this.values.get(fieldIndex).orElse(null);
     }
 
-    public TableRowData set(String fieldName, Object value) {
+    public TableRowMap set(String fieldName, Object value) {
         int fieldIndex = this.indexForField(fieldName);
         var optValue = (value == null) ? Optional.empty() : Optional.of(value);
         this.values.set(fieldIndex, optValue);
@@ -32,7 +33,7 @@ public class TableRowData {
         return this.values.stream().map(val -> val.orElse(null)).toList();
     }
 
-    public TableRowData removeField(String fieldName) {
+    public TableRowMap removeField(String fieldName) {
         int fieldIndex = this.indexForField(fieldName);
         this.values.remove(fieldIndex);
         this.fields.remove(fieldName);
