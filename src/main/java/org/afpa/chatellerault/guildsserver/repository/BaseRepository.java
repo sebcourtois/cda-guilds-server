@@ -1,8 +1,8 @@
 package org.afpa.chatellerault.guildsserver.repository;
 
 import lombok.NonNull;
-import org.afpa.chatellerault.guildsserver.util.TableMappedData;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
+import org.afpa.chatellerault.guildsserver.util.TableMappedData;
 import org.postgresql.util.PGobject;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;

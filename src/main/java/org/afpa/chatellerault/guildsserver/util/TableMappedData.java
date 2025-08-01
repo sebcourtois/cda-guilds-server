@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
-public abstract class TableMappedData {
+public interface TableMappedData {
 
-    public abstract String tableName();
-    public abstract List<TableFieldSpec> tableFields();
+    String tableName();
 
-    public List<TableFieldSpec> primaryFields() throws NoSuchElementException {
+    List<TableFieldSpec> tableFields();
+
+    default List<TableFieldSpec> primaryFields() throws NoSuchElementException {
         var pkFields = this.tableFields().stream()
                 .filter(TableFieldSpec::isPrimaryKey)
                 .toList();
@@ -25,14 +26,14 @@ public abstract class TableMappedData {
         return pkFields;
     }
 
-    public List<Object> primaryKeys() {
+    default List<Object> primaryKeys() {
         return this.primaryFields().stream()
                 .map(TableFieldSpec::getGetter)
                 .map(Supplier::get)
                 .toList();
     }
 
-    public TableRowData toTableRow() {
+    default TableRowData toTableRow() {
         var fieldNames = this.tableFields().stream()
                 .map(TableFieldSpec::getName)
                 .toList();
@@ -47,11 +48,11 @@ public abstract class TableMappedData {
         return tableRow;
     }
 
-    public TableRowMapper tableRowMapper() {
+    default TableRowMapper tableRowMapper() {
         return new TableRowMapper(this.tableFields());
     }
 
-    public void loadTableRow(TableRowData tableRow) {
+    default void loadTableRow(TableRowData tableRow) {
         for (var fieldSpec : this.tableFields()) {
             var fieldName = fieldSpec.getName();
             var fieldSetter = fieldSpec.getSetter();
@@ -59,7 +60,7 @@ public abstract class TableMappedData {
         }
     }
 
-    public static class TableRowMapper implements RowMapper<TableRowData> {
+    class TableRowMapper implements RowMapper<TableRowData> {
         private final List<TableFieldSpec> tableFields;
 
         public TableRowMapper(List<TableFieldSpec> tableFields) {
