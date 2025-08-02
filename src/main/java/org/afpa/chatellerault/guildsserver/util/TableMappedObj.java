@@ -19,7 +19,7 @@ public interface TableMappedObj {
 
     TableRowMap toRowMap();
 
-    RowMapper<TableRowMap> tableRowMapper();
+    RowMapper<TableRowMap> rowMapper();
 
     void loadFromRowMap(TableRowMap tableRow);
 

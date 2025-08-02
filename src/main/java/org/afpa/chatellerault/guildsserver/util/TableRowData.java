@@ -67,7 +67,7 @@ public abstract class TableRowData implements TableMappedObj {
         }
     }
 
-    public TableRowMapper tableRowMapper() {
+    public TableRowMapper rowMapper() {
         return new TableRowMapper(this.getTableFields());
     }
 

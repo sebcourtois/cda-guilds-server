@@ -1,8 +1,6 @@
-package org.afpa.chatellerault.guildsserver.repository;
+package org.afpa.chatellerault.guildsserver.util;
 
 import lombok.NonNull;
-import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
-import org.afpa.chatellerault.guildsserver.util.TableMappedObj;
 import org.postgresql.util.PGobject;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -17,7 +15,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Repository
-public abstract class BaseRepository<D extends TableMappedObj> {
+public abstract class BaseRepository {
 
     public final JdbcClient jdbcClient;
 
@@ -25,10 +23,10 @@ public abstract class BaseRepository<D extends TableMappedObj> {
         this.jdbcClient = jdbcClient;
     }
 
-    public void create(D entityData) throws SQLException {
+    public void create(TableMappedObj tableRow) throws SQLException {
         var sqlParamSource = new MapSqlParameterSource();
         var pgObjMapper = new PGobjectMapper();
-        for (TableFieldSpec field : entityData.getTableFields()) {
+        for (TableFieldSpec field : tableRow.getTableFields()) {
             if (field.isGenerated()) continue;
             sqlParamSource.addValue(
                     field.getName(),
@@ -40,45 +38,45 @@ public abstract class BaseRepository<D extends TableMappedObj> {
         String sql = """
                 INSERT INTO "%s" ("%s") VALUES (%s) RETURNING *;
                 """.formatted(
-                entityData.tableName(),
+                tableRow.tableName(),
                 String.join("\", \"", fieldNames),
                 String.join(", ", valuePlaceholders)
         );
         var rowMap = this.jdbcClient.sql(sql)
                 .paramSource(sqlParamSource)
-                .query(entityData.tableRowMapper()).single();
+                .query(tableRow.rowMapper()).single();
 
-        entityData.loadFromRowMap(rowMap);
+        tableRow.loadFromRowMap(rowMap);
     }
 
-    public int delete(D entityData) {
-        String pkCondition = entityData.getPrimaryFields().stream()
+    public int delete(TableMappedObj tableRow) {
+        String pkCondition = tableRow.getPrimaryFields().stream()
                 .map(field -> "\"%s\" = ?".formatted(field.getName()))
                 .collect(Collectors.joining(" AND "));
         String sql = """
                 DELETE FROM "%s" WHERE %s;
-                """.formatted(entityData.tableName(), pkCondition);
+                """.formatted(tableRow.tableName(), pkCondition);
 
-        return this.jdbcClient.sql(sql).params(entityData.getPrimaryKeys()).update();
+        return this.jdbcClient.sql(sql).params(tableRow.getPrimaryKeys()).update();
     }
 
-    public EntityRowMapper<D> entityRowMapper(Supplier<D> supplier) {
-        return new EntityRowMapper<>(supplier);
+    public TableRowMapper rowMapper(Supplier<TableMappedObj> instanceBuilder) {
+        return new TableRowMapper(instanceBuilder);
     }
 
-    public static class EntityRowMapper<E extends TableMappedObj> implements RowMapper<E> {
-        private final Supplier<E> supplier;
+    public static class TableRowMapper implements RowMapper<TableMappedObj> {
+        private final Supplier<TableMappedObj> instanceBuilder;
 
-        public EntityRowMapper(Supplier<E> supplier) {
-            this.supplier = supplier;
+        public TableRowMapper(Supplier<TableMappedObj> instanceBuilder) {
+            this.instanceBuilder = instanceBuilder;
         }
 
         @Override
-        public E mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
-            var entity = this.supplier.get();
-            var rowData = entity.tableRowMapper().mapRow(res, rowNum);
-            entity.loadFromRowMap(rowData);
-            return entity;
+        public TableMappedObj mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
+            var tableRow = this.instanceBuilder.get();
+            var rowMap = tableRow.rowMapper().mapRow(res, rowNum);
+            tableRow.loadFromRowMap(rowMap);
+            return tableRow;
         }
     }
 
