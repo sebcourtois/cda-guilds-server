@@ -2,15 +2,17 @@ package org.afpa.chatellerault.guildsserver.model;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
-import org.afpa.chatellerault.guildsserver.util.TableMappedData;
+import org.afpa.chatellerault.guildsserver.util.TableRowData;
 
 import java.util.List;
 import java.util.UUID;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class TradingPostData implements TableMappedData {
+public class TradingPostData extends TableRowData {
     UUID id;
     String name;
 

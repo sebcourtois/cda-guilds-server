@@ -2,7 +2,7 @@ package org.afpa.chatellerault.guildsserver.repository;
 
 import lombok.NonNull;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
-import org.afpa.chatellerault.guildsserver.util.TableMappedData;
+import org.afpa.chatellerault.guildsserver.util.TableMappedObj;
 import org.postgresql.util.PGobject;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Repository
-public abstract class BaseRepository<D extends TableMappedData> {
+public abstract class BaseRepository<D extends TableMappedObj> {
 
     public final JdbcClient jdbcClient;
 
@@ -28,7 +28,7 @@ public abstract class BaseRepository<D extends TableMappedData> {
     public void create(D entityData) throws SQLException {
         var sqlParamSource = new MapSqlParameterSource();
         var pgObjMapper = new PGobjectMapper();
-        for (TableFieldSpec field : entityData.tableFields()) {
+        for (TableFieldSpec field : entityData.getTableFields()) {
             if (field.isGenerated()) continue;
             sqlParamSource.addValue(
                     field.getName(),
@@ -44,29 +44,29 @@ public abstract class BaseRepository<D extends TableMappedData> {
                 String.join("\", \"", fieldNames),
                 String.join(", ", valuePlaceholders)
         );
-        var rowData = this.jdbcClient.sql(sql)
+        var rowMap = this.jdbcClient.sql(sql)
                 .paramSource(sqlParamSource)
                 .query(entityData.tableRowMapper()).single();
 
-        entityData.loadTableRow(rowData);
+        entityData.loadFromRowMap(rowMap);
     }
 
     public int delete(D entityData) {
-        String pkCondition = entityData.primaryFields().stream()
+        String pkCondition = entityData.getPrimaryFields().stream()
                 .map(field -> "\"%s\" = ?".formatted(field.getName()))
                 .collect(Collectors.joining(" AND "));
         String sql = """
                 DELETE FROM "%s" WHERE %s;
                 """.formatted(entityData.tableName(), pkCondition);
 
-        return this.jdbcClient.sql(sql).params(entityData.primaryKeys()).update();
+        return this.jdbcClient.sql(sql).params(entityData.getPrimaryKeys()).update();
     }
 
     public EntityRowMapper<D> entityRowMapper(Supplier<D> supplier) {
         return new EntityRowMapper<>(supplier);
     }
 
-    public static class EntityRowMapper<E extends TableMappedData> implements RowMapper<E> {
+    public static class EntityRowMapper<E extends TableMappedObj> implements RowMapper<E> {
         private final Supplier<E> supplier;
 
         public EntityRowMapper(Supplier<E> supplier) {
@@ -77,7 +77,7 @@ public abstract class BaseRepository<D extends TableMappedData> {
         public E mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
             var entity = this.supplier.get();
             var rowData = entity.tableRowMapper().mapRow(res, rowNum);
-            entity.loadTableRow(rowData);
+            entity.loadFromRowMap(rowData);
             return entity;
         }
     }

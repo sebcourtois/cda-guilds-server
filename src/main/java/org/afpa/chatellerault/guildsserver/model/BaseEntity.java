@@ -2,9 +2,9 @@ package org.afpa.chatellerault.guildsserver.model;
 
 import lombok.Getter;
 import org.afpa.chatellerault.guildsserver.repository.BaseRepository;
-import org.afpa.chatellerault.guildsserver.util.TableMappedData;
+import org.afpa.chatellerault.guildsserver.util.TableMappedObj;
 
-public abstract class BaseEntity<D extends TableMappedData, R extends BaseRepository<D>> {
+public abstract class BaseEntity<D extends TableMappedObj, R extends BaseRepository<D>> {
     @Getter
     protected final D data;
     @Getter

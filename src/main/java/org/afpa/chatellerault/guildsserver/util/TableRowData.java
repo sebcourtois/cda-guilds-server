@@ -9,58 +9,69 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
-public interface TableMappedData {
+public abstract class TableRowData implements TableMappedObj {
+    private List<TableFieldSpec> $primaryFields;
+    private List<TableFieldSpec> $tableFields;
 
-    String tableName();
+    public abstract String tableName();
 
-    List<TableFieldSpec> tableFields();
+    public abstract List<TableFieldSpec> tableFields();
 
-    default List<TableFieldSpec> primaryFields() throws NoSuchElementException {
-        var pkFields = this.tableFields().stream()
+    public final List<TableFieldSpec> getTableFields() {
+        if (this.$tableFields != null) return this.$tableFields;
+        var fieldsConfig = this.tableFields();
+        this.$tableFields = fieldsConfig;
+        return fieldsConfig;
+    }
+
+    public final List<TableFieldSpec> getPrimaryFields() throws NoSuchElementException {
+        if (this.$primaryFields != null) return this.$primaryFields;
+        var fields = this.getTableFields().stream()
                 .filter(TableFieldSpec::isPrimaryKey)
                 .toList();
 
-        if (pkFields.isEmpty()) {
+        if (fields.isEmpty()) {
             throw new NoSuchElementException();
         }
-        return pkFields;
+        this.$primaryFields = fields;
+        return fields;
     }
 
-    default List<Object> primaryKeys() {
-        return this.primaryFields().stream()
+    public final List<Object> getPrimaryKeys() {
+        return this.getPrimaryFields().stream()
                 .map(TableFieldSpec::getGetter)
                 .map(Supplier::get)
                 .toList();
     }
 
-    default TableRowMap toTableRow() {
-        var fieldNames = this.tableFields().stream()
+    public final TableRowMap toRowMap() {
+        var fieldNames = this.getTableFields().stream()
                 .map(TableFieldSpec::getName)
                 .toList();
 
-        var tableRow = new TableRowMap(fieldNames);
-        for (var fieldSpec : this.tableFields()) {
+        var rowMap = new TableRowMap(fieldNames);
+        for (var fieldSpec : this.getTableFields()) {
             var fieldGetter = fieldSpec.getGetter();
             if (fieldGetter != null) {
-                tableRow.set(fieldSpec.getName(), fieldGetter.get());
+                rowMap.set(fieldSpec.getName(), fieldGetter.get());
             }
         }
-        return tableRow;
+        return rowMap;
     }
 
-    default TableRowMapper tableRowMapper() {
-        return new TableRowMapper(this.tableFields());
-    }
-
-    default void loadTableRow(TableRowMap tableRow) {
-        for (var fieldSpec : this.tableFields()) {
+    public final void loadFromRowMap(TableRowMap rowMap) {
+        for (var fieldSpec : this.getTableFields()) {
             var fieldName = fieldSpec.getName();
             var fieldSetter = fieldSpec.getSetter();
-            fieldSetter.accept(tableRow.get(fieldName));
+            fieldSetter.accept(rowMap.get(fieldName));
         }
     }
 
-    class TableRowMapper implements RowMapper<TableRowMap> {
+    public TableRowMapper tableRowMapper() {
+        return new TableRowMapper(this.getTableFields());
+    }
+
+    public static class TableRowMapper implements RowMapper<TableRowMap> {
         private final List<TableFieldSpec> tableFields;
 
         public TableRowMapper(List<TableFieldSpec> tableFields) {
@@ -82,4 +93,3 @@ public interface TableMappedData {
         }
     }
 }
-

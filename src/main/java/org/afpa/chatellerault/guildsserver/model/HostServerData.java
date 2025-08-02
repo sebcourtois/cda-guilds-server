@@ -2,16 +2,18 @@ package org.afpa.chatellerault.guildsserver.model;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
-import org.afpa.chatellerault.guildsserver.util.TableMappedData;
+import org.afpa.chatellerault.guildsserver.util.TableRowData;
 
 import java.net.InetAddress;
 import java.util.List;
 import java.util.UUID;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class HostServerData implements TableMappedData {
+public class HostServerData extends TableRowData {
     UUID id;
     InetAddress ipAddress;
     int port;
