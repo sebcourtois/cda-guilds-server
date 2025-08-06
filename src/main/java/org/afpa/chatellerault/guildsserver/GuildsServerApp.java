@@ -12,7 +12,6 @@ import org.afpa.chatellerault.guildsserver.service.TradingPosts;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -21,7 +20,7 @@ import java.net.InetAddress;
 import java.util.NoSuchElementException;
 
 @SpringBootApplication
-public class GuildsServerApp implements ApplicationRunner {
+public class GuildsServerApp {
     private static final Logger LOG = LogManager.getLogger(GuildsServerApp.class);
 
     JdbcClient jdbcClient;
@@ -34,8 +33,7 @@ public class GuildsServerApp implements ApplicationRunner {
         SpringApplication.run(GuildsServerApp.class, args);
     }
 
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void populateDb(ApplicationArguments args) throws Exception {
         TradingPosts.setRepository(new TradingPostRepository(this.jdbcClient));
         Caravans.setRepository(new CaravanRepository(this.jdbcClient));
         HostServers.setRepository(new HostServerRepository(this.jdbcClient));
