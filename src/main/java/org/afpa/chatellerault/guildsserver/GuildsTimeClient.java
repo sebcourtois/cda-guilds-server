@@ -12,12 +12,13 @@ import java.io.IOException;
 import java.net.*;
 
 @Profile("!test")
-//@Component
+//@org.springframework.stereotype.Component
 public class GuildsTimeClient implements ApplicationRunner {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeClient.class);
 
     public void run(ApplicationArguments args) throws Exception {
 
+        LOG.info("HELLO");
         this.sayHelloToTimeServer();
 
         var jsonParser = JsonParserFactory.getJsonParser();
@@ -34,6 +35,8 @@ public class GuildsTimeClient implements ApplicationRunner {
 
             Long prevDay = null;
             long byeCount = 0;
+            long helloCount = 0;
+            int batchSize = 1;
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     socket.receive(packet);
@@ -44,25 +47,31 @@ public class GuildsTimeClient implements ApplicationRunner {
                 var data = jsonParser.parseMap(received);
                 String msgType = (String) data.get("type");
                 if (msgType.equals("date")) {
-//                    long currDay = (long) data.get("day");
-//                    if (prevDay != null) {
-//                        System.out.printf("prev: %s - curr: %s %n", prevDay, currDay);
-//                        if (prevDay == currDay) {
-//                            System.out.printf("byeCount: %s%n", byeCount);
-////                            this.sayHelloToTimeServer();
-//                        } else if (prevDay < currDay) {
-//                            int batchSize = 10000;
-//                            LOG.info("sending {} bye", batchSize);
-//                            for (int i = 0; i <= batchSize; i++) {
-//                                this.sayByeToTimeServer();
-//                                byeCount++;
-////                                Thread.sleep(20);
+                    long currDay = (long) data.get("day");
+                    if (prevDay != null) {
+                        System.out.printf("prev: %s - curr: %s %n", prevDay, currDay);
+                        if (prevDay == currDay) {
+                            if (byeCount > 0) LOG.info("{} BYE needed to get time to stop", byeCount);
+//                            LOG.info("sending {} hello", batchSize);
+//                            for (int i = 0; i < batchSize; i++) {
+//                                this.sayHelloToTimeServer();
+//                                helloCount++;
+//                                Thread.sleep(10);
 //                            }
-//                            LOG.info("sent {} bye", byeCount);
-//                        }
-//                        System.out.printf("prev: %s - curr: %s %n", prevDay, currDay);
-//                    }
-//                    prevDay = currDay;
+//                            LOG.info("sent {} hello", helloCount);
+                        } else if (prevDay < currDay) {
+                            if (helloCount > 0) LOG.info("{} HELLO needed to get time to pass", helloCount);
+                            LOG.info("sending {} bye", batchSize);
+                            for (int i = 0; i < batchSize; i++) {
+                                this.sayByeToTimeServer();
+                                byeCount++;
+                                Thread.sleep(10);
+                            }
+                            LOG.info("sent {} bye", byeCount);
+                        }
+                        System.out.printf("prev: %s - curr: %s %n", prevDay, currDay);
+                    }
+                    prevDay = currDay;
                     System.out.println(data);
                 }
             }
@@ -77,7 +86,6 @@ public class GuildsTimeClient implements ApplicationRunner {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
 
         try (var socket = new MulticastSocket(5000)) {
-            LOG.info("HELLO");
             socket.send(packet);
         }
     }
@@ -90,7 +98,6 @@ public class GuildsTimeClient implements ApplicationRunner {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
 
         try (var socket = new MulticastSocket(5000)) {
-            LOG.info("BYE");
             socket.send(packet);
         }
     }
@@ -99,6 +106,7 @@ public class GuildsTimeClient implements ApplicationRunner {
     public void onExit() {
         try {
             this.sayByeToTimeServer();
+            LOG.info("BYE");
         } catch (IOException e) {
             LOG.info("failed to say bye to time server");
         }
