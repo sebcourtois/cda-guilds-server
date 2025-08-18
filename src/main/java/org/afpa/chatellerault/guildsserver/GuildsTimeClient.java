@@ -33,10 +33,6 @@ public class GuildsTimeClient implements ApplicationRunner {
             byte[] buffer = new byte[1000];
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
-            Long prevDay = null;
-            long byeCount = 0;
-            long helloCount = 0;
-            int batchSize = 1;
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     socket.receive(packet);
@@ -47,31 +43,6 @@ public class GuildsTimeClient implements ApplicationRunner {
                 var data = jsonParser.parseMap(received);
                 String msgType = (String) data.get("type");
                 if (msgType.equals("date")) {
-                    long currDay = (long) data.get("day");
-                    if (prevDay != null) {
-                        System.out.printf("prev: %s - curr: %s %n", prevDay, currDay);
-                        if (prevDay == currDay) {
-                            if (byeCount > 0) LOG.info("{} BYE needed to get time to stop", byeCount);
-//                            LOG.info("sending {} hello", batchSize);
-//                            for (int i = 0; i < batchSize; i++) {
-//                                this.sayHelloToTimeServer();
-//                                helloCount++;
-//                                Thread.sleep(10);
-//                            }
-//                            LOG.info("sent {} hello", helloCount);
-                        } else if (prevDay < currDay) {
-                            if (helloCount > 0) LOG.info("{} HELLO needed to get time to pass", helloCount);
-                            LOG.info("sending {} bye", batchSize);
-                            for (int i = 0; i < batchSize; i++) {
-                                this.sayByeToTimeServer();
-                                byeCount++;
-                                Thread.sleep(10);
-                            }
-                            LOG.info("sent {} bye", byeCount);
-                        }
-                        System.out.printf("prev: %s - curr: %s %n", prevDay, currDay);
-                    }
-                    prevDay = currDay;
                     System.out.println(data);
                 }
             }
