@@ -15,7 +15,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 @Profile("!test")
-@org.springframework.stereotype.Component
+//@org.springframework.stereotype.Component
 public class ParrotServerRunner implements ApplicationRunner {
     private static final Logger LOG = LogManager.getLogger(ParrotServerRunner.class);
     private ServerSocket socket;

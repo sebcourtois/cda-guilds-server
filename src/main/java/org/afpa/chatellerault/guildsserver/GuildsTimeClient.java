@@ -1,86 +1,97 @@
 package org.afpa.chatellerault.guildsserver;
 
-import jakarta.annotation.PreDestroy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.json.JsonParserFactory;
-import org.springframework.context.annotation.Profile;
 
+import java.io.Closeable;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.*;
 
-@Profile("!test")
-//@org.springframework.stereotype.Component
-public class GuildsTimeClient implements ApplicationRunner {
+public class GuildsTimeClient implements Runnable, Closeable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeClient.class);
+    private final int port;
+    private final InetSocketAddress socketAddress;
+    private final NetworkInterface networkInterface;
+    private final PrintStream printStream;
+    private boolean running;
+    private final MulticastSocket socket;
 
-    public void run(ApplicationArguments args) throws Exception {
+    public GuildsTimeClient(PrintStream printStream) throws IOException {
+        this.port = 5000;
+        this.socketAddress = new InetSocketAddress("228.5.6.7", this.port);
+        this.socket = new MulticastSocket(port);
+        this.networkInterface = NetworkInterface.getByName("bge0");
+        this.socket.setSoTimeout(1000);
+        this.socket.joinGroup(socketAddress, this.networkInterface);
+        this.printStream = printStream;
+        this.running = true;
+    }
 
-        LOG.info("HELLO");
-        this.sayHelloToTimeServer();
-
+    public void listen() throws IOException {
+        this.running = true;
         var jsonParser = JsonParserFactory.getJsonParser();
-        int port = 5000;
-        String multicastAddress = "228.5.6.7";
-        var group = new InetSocketAddress(multicastAddress, port);
-        var netInterface = NetworkInterface.getByName("bge0");
-        try (var socket = new MulticastSocket(port)) {
-            socket.setSoTimeout(1000);
-            socket.joinGroup(group, netInterface);
 
-            byte[] buffer = new byte[1000];
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        byte[] buffer = new byte[1000];
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    socket.receive(packet);
-                } catch (SocketTimeoutException e) {
-                    continue;
-                }
-                String received = new String(packet.getData(), 0, packet.getLength());
-                var data = jsonParser.parseMap(received);
-                String msgType = (String) data.get("type");
-                if (msgType.equals("date")) {
-                    System.out.println(data);
-                }
+        while (this.running) {
+            try {
+                this.socket.receive(packet);
+            } catch (SocketTimeoutException e) {
+                continue;
+            }
+
+            var received = new String(packet.getData(), 0, packet.getLength());
+            var data = jsonParser.parseMap(received);
+            String msgType = (String) data.get("type");
+            if (msgType.equals("date")) {
+                this.printStream.println(data);
             }
         }
+        this.close();
+        LOG.info("GuildsTimeClient stopped");
     }
 
-    public void sayHelloToTimeServer() throws IOException {
+    public void stop() {
+        this.running = false;
+    }
+
+    public void sayHello() throws IOException {
         String message = "{\"type\":\"hello\"}";
-        byte[] buffer = message.getBytes();
-        InetAddress group = InetAddress.getByName("228.5.6.7");
-        int port = 5000;
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
-
-        try (var socket = new MulticastSocket(5000)) {
-            socket.send(packet);
-        }
+        this.sendMessage(message);
     }
 
-    public void sayByeToTimeServer() throws IOException {
+    public void sayBye() throws IOException {
         String message = "{\"type\":\"bye\"}";
+        this.sendMessage(message);
+    }
+
+    public void sendMessage(String message) throws IOException {
         byte[] buffer = message.getBytes();
-        InetAddress group = InetAddress.getByName("228.5.6.7");
-        int port = 5000;
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, port);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, this.socketAddress.getAddress(), this.port);
+        this.socket.send(packet);
+    }
 
-        try (var socket = new MulticastSocket(5000)) {
-            socket.send(packet);
+    @Override
+    public void close() {
+        if (this.socket != null && !this.socket.isClosed()) {
+            try {
+                this.socket.leaveGroup(this.socketAddress, this.networkInterface);
+            } catch (IOException e) {
+                LOG.info("failed to leave multicast group", e);
+            }
+            this.socket.close();
         }
     }
 
-    @PreDestroy
-    public void onExit() {
+    @Override
+    public void run() {
         try {
-            this.sayByeToTimeServer();
-            LOG.info("BYE");
+            this.listen();
         } catch (IOException e) {
-            LOG.info("failed to say bye to time server");
+            throw new RuntimeException(e);
         }
     }
-
 }
