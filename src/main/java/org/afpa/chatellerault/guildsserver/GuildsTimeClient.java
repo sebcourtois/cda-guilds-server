@@ -29,7 +29,7 @@ public class GuildsTimeClient implements Runnable, Closeable {
         this.running = true;
     }
 
-    public void listen() throws IOException {
+    public void start() throws IOException {
         this.running = true;
         var jsonParser = JsonParserFactory.getJsonParser();
 
@@ -42,7 +42,6 @@ public class GuildsTimeClient implements Runnable, Closeable {
             } catch (SocketTimeoutException e) {
                 continue;
             }
-
             var received = new String(packet.getData(), 0, packet.getLength());
             var data = jsonParser.parseMap(received);
             String msgType = (String) data.get("type");
@@ -89,7 +88,7 @@ public class GuildsTimeClient implements Runnable, Closeable {
     @Override
     public void run() {
         try {
-            this.listen();
+            this.start();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
