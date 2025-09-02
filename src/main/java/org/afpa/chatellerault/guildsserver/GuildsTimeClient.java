@@ -7,24 +7,25 @@ import org.springframework.boot.json.JsonParserFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.SocketTimeoutException;
 
 public class GuildsTimeClient implements Runnable, Closeable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeClient.class);
     private final int port;
     private final InetSocketAddress socketAddress;
-    private final NetworkInterface networkInterface;
     private final PrintStream printStream;
-    private boolean running;
     private final MulticastSocket socket;
+    private volatile boolean running;
 
     public GuildsTimeClient(PrintStream printStream) throws IOException {
         this.port = 5000;
         this.socketAddress = new InetSocketAddress("228.5.6.7", this.port);
         this.socket = new MulticastSocket(port);
-        this.networkInterface = NetworkInterface.getByName("bge0");
         this.socket.setSoTimeout(1000);
-        this.socket.joinGroup(socketAddress, this.networkInterface);
+        this.socket.joinGroup(socketAddress, null);
         this.printStream = printStream;
         this.running = true;
     }
@@ -50,7 +51,7 @@ public class GuildsTimeClient implements Runnable, Closeable {
             }
         }
         this.close();
-        LOG.info("GuildsTimeClient stopped");
+        LOG.info("{} stopped", this.getClass().getSimpleName());
     }
 
     public void stop() {
@@ -77,7 +78,7 @@ public class GuildsTimeClient implements Runnable, Closeable {
     public void close() {
         if (this.socket != null && !this.socket.isClosed()) {
             try {
-                this.socket.leaveGroup(this.socketAddress, this.networkInterface);
+                this.socket.leaveGroup(this.socketAddress, null);
             } catch (IOException e) {
                 LOG.info("failed to leave multicast group", e);
             }

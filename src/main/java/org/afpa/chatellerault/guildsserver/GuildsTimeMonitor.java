@@ -3,70 +3,49 @@ package org.afpa.chatellerault.guildsserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 
 public class GuildsTimeMonitor implements Runnable, Closeable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitor.class);
 
     private ServerSocket socket;
-    private boolean running;
+    private volatile boolean running;
+
+    public GuildsTimeMonitor() {
+        this.socket = null;
+        this.running = false;
+    }
 
     public void start() throws IOException {
         int port = 50505;
         this.socket = new ServerSocket(port);
-        this.socket.setSoTimeout(100);
-        LOG.info("GuildsTimeMonitor started on port {}", port);
+        this.socket.setSoTimeout(1000);
         this.running = true;
+        LOG.info("{} started on port {}", this.getClass().getSimpleName(),port);
 
+        ArrayList<GuildsTimeMonitorConnection> gtClients = new ArrayList<>();
         Socket clientSocket;
         while (this.running) {
             try {
                 clientSocket = this.socket.accept();
-                clientSocket.setSoTimeout(100);
             } catch (SocketTimeoutException e) {
                 continue;
             }
-            String hostName = clientSocket.getInetAddress().getHostName();
-            LOG.info("Listening to {}...", hostName);
-            var inputStream = clientSocket.getInputStream();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            PrintStream out = new PrintStream(clientSocket.getOutputStream());
+            var gtClient = new GuildsTimeMonitorConnection(clientSocket);
+            gtClients.add(gtClient);
+            new Thread(gtClient).start();
+        }
 
-            var gtClient = new GuildsTimeClient(out);
-            var gtcThread = new Thread(gtClient);
-            gtcThread.start();
-
-            String message;
-            while (this.running) {
-                try {
-                    message = bufferedReader.readLine();
-                } catch (SocketTimeoutException e) {
-                    continue;
-                }
-                if (message == null) {
-                    LOG.info("Client disconnected.");
-                    break;
-                }
-                out.printf("from %s: %s%n", hostName, message);
-                switch (message.toLowerCase()) {
-                    case "hello" -> gtClient.sayHello();
-                    case "bye" -> gtClient.sayBye();
-                    case "terminate" -> gtClient.sendMessage("{\"type\":\"terminate\"}");
-                }
-            }
-
+        for (var gtClient : gtClients) {
             gtClient.stop();
-            try {
-                gtcThread.join();
-            } catch (InterruptedException e) {
-                LOG.info("Thread already interrupted", e);
-            }
         }
         this.close();
-        LOG.info("GuildsTimeMonitor stopped");
+        LOG.info("{} stopped", this.getClass().getSimpleName());
     }
 
     public void stop() {

@@ -12,24 +12,24 @@ import org.springframework.context.annotation.Profile;
 public class GuildsTimeMonitorRunner implements ApplicationRunner {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitorRunner.class);
 
-    private GuildsTimeMonitor monitor;
-    private Thread monitorThread;
+    private GuildsTimeMonitor gtMonitor;
+    private Thread gtMonitorThread;
 
     @Override
     public void run(ApplicationArguments args) {
-        this.monitor = new GuildsTimeMonitor();
-        this.monitorThread = new Thread(this.monitor);
-        this.monitorThread.start();
+        this.gtMonitor = new GuildsTimeMonitor();
+        this.gtMonitorThread = new Thread(this.gtMonitor);
+        this.gtMonitorThread.start();
     }
 
     @PreDestroy
     public void stop() {
-        LOG.info("stopping GuildsTimeMonitor...");
-        this.monitor.stop();
+        LOG.info("stopping {}...", this.getClass().getSimpleName());
+        this.gtMonitor.stop();
         try {
-            this.monitorThread.join();
+            this.gtMonitorThread.join();
         } catch (InterruptedException e) {
-            LOG.info("GuildsTimeMonitor thread already interrupted");
+            LOG.info("{} thread already interrupted", this.gtMonitor.getClass().getSimpleName());
         }
     }
 }
