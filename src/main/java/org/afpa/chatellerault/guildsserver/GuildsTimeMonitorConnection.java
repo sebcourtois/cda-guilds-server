@@ -29,12 +29,11 @@ public class GuildsTimeMonitorConnection implements Runnable {
         LOG.info("{} listening to {}...", this.getClass().getSimpleName(), hostName);
 
         GuildsTimeClient gtClient = null;
-        Thread gtcThread = null;
         try {
             var outStream = new PrintStream(clientSocket.getOutputStream());
             gtClient = new GuildsTimeClient(outStream);
-            gtcThread = new Thread(gtClient);
-            gtcThread.start();
+            gtClient.startDaemon();
+
             var inStream = clientSocket.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inStream));
 
@@ -59,14 +58,7 @@ public class GuildsTimeMonitorConnection implements Runnable {
                 }
             }
         } finally {
-            if (gtcThread != null) {
-                gtClient.stop();
-                try {
-                    gtcThread.join(); // wait for GuildsTimeClient to stop
-                } catch (InterruptedException e) {
-                    LOG.warn("{} thread already interrupted !?", gtClient.getClass().getSimpleName());
-                }
-            }
+            if (gtClient != null) gtClient.shutdown();
             if (!clientSocket.isClosed()) clientSocket.close();
             LOG.debug("{} stopped", this.getClass().getSimpleName());
         }
@@ -84,6 +76,7 @@ public class GuildsTimeMonitorConnection implements Runnable {
     }
 
     public void startDaemon() {
+        if (this.thread != null) throw new RuntimeException("daemon already started");
         this.thread = Thread.ofVirtual().start(this);
     }
 

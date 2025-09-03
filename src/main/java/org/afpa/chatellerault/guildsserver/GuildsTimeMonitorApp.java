@@ -18,8 +18,7 @@ public class GuildsTimeMonitorApp implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         this.gtMonitor = new GuildsTimeMonitor();
-        this.gtMonitorThread = new Thread(this.gtMonitor);
-        this.gtMonitorThread.start();
+        this.gtMonitorThread = Thread.ofPlatform().start(this.gtMonitor);
     }
 
     @PreDestroy

@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.json.JsonParserFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.DatagramPacket;
@@ -12,13 +11,14 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 
-public class GuildsTimeClient implements Runnable, Closeable {
+public class GuildsTimeClient implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeClient.class);
     private final int port;
     private final InetSocketAddress socketAddress;
     private final PrintStream printStream;
     private final MulticastSocket socket;
     private volatile boolean running;
+    private Thread thread;
 
     public GuildsTimeClient(PrintStream printStream) throws IOException {
         this.port = 5000;
@@ -29,15 +29,15 @@ public class GuildsTimeClient implements Runnable, Closeable {
         this.socket.joinGroup(socketAddress, null);
         this.printStream = printStream;
         this.running = false;
+        this.thread = null;
     }
 
-    public void start() throws IOException {
-        this.running = true;
+    public void listen() throws IOException {
         var jsonParser = JsonParserFactory.getJsonParser();
-
         byte[] buffer = new byte[1000];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
+        this.running = true;
         while (this.running) {
             try {
                 this.socket.receive(packet);
@@ -51,12 +51,32 @@ public class GuildsTimeClient implements Runnable, Closeable {
                 this.printStream.println(data);
             }
         }
-        this.close();
+
+        if (!this.socket.isClosed()) {
+            try {
+                this.socket.leaveGroup(this.socketAddress, null);
+            } catch (IOException e) {
+                LOG.info("failed to leave multicast group", e);
+            }
+            this.socket.close();
+        }
         LOG.info("{} stopped", this.getClass().getSimpleName());
     }
 
-    public void stop() {
+    public void startDaemon() {
+        if (this.thread != null) throw new RuntimeException("daemon already started");
+        this.thread = Thread.ofVirtual().start(this);
+    }
+
+    public void shutdown() {
         this.running = false;
+        if (this.thread != null) {
+            try {
+                this.thread.join(); // wait for GuildsTimeClient to stop
+            } catch (InterruptedException e) {
+                LOG.warn("{} thread already interrupted !?", this.getClass().getSimpleName());
+            }
+        }
     }
 
     public void sayHello() throws IOException {
@@ -76,21 +96,9 @@ public class GuildsTimeClient implements Runnable, Closeable {
     }
 
     @Override
-    public void close() {
-        if (this.socket != null && !this.socket.isClosed()) {
-            try {
-                this.socket.leaveGroup(this.socketAddress, null);
-            } catch (IOException e) {
-                LOG.info("failed to leave multicast group", e);
-            }
-            this.socket.close();
-        }
-    }
-
-    @Override
     public void run() {
         try {
-            this.start();
+            this.listen();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

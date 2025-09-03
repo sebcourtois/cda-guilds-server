@@ -22,12 +22,13 @@ public class GuildsTimeMonitor implements Runnable, Closeable {
     public void start() throws IOException {
         int port = 50505;
         ArrayList<GuildsTimeMonitorConnection> clientConnections = new ArrayList<>();
+
         try (var serverSocket = new ServerSocket(port)) {
             serverSocket.setSoTimeout(1000);
-            this.running = true;
             LOG.info("{} started on port {}", this.getClass().getSimpleName(), port);
-            Socket clientSocket;
 
+            this.running = true;
+            Socket clientSocket;
             while (this.running) {
                 try {
                     clientSocket = serverSocket.accept();
