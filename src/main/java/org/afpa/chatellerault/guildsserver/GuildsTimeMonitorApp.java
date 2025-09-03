@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Profile;
 
 @Profile("!test")
 @org.springframework.stereotype.Component
-public class GuildsTimeMonitorRunner implements ApplicationRunner {
-    private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitorRunner.class);
+public class GuildsTimeMonitorApp implements ApplicationRunner {
+    private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitorApp.class);
 
     private GuildsTimeMonitor gtMonitor;
     private Thread gtMonitorThread;
@@ -24,7 +24,7 @@ public class GuildsTimeMonitorRunner implements ApplicationRunner {
 
     @PreDestroy
     public void stop() {
-        LOG.info("stopping {}...", this.getClass().getSimpleName());
+        LOG.info("stopping {}...", this.gtMonitor.getClass().getSimpleName());
         this.gtMonitor.stop();
         try {
             this.gtMonitorThread.join();

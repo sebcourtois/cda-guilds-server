@@ -13,38 +13,36 @@ import java.util.ArrayList;
 public class GuildsTimeMonitor implements Runnable, Closeable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitor.class);
 
-    private ServerSocket socket;
     private volatile boolean running;
 
     public GuildsTimeMonitor() {
-        this.socket = null;
         this.running = false;
     }
 
     public void start() throws IOException {
         int port = 50505;
-        this.socket = new ServerSocket(port);
-        this.socket.setSoTimeout(1000);
-        this.running = true;
-        LOG.info("{} started on port {}", this.getClass().getSimpleName(),port);
+        ArrayList<GuildsTimeMonitorConnection> clientConnections = new ArrayList<>();
+        try (var serverSocket = new ServerSocket(port)) {
+            serverSocket.setSoTimeout(1000);
+            this.running = true;
+            LOG.info("{} started on port {}", this.getClass().getSimpleName(), port);
+            Socket clientSocket;
 
-        ArrayList<GuildsTimeMonitorConnection> gtClients = new ArrayList<>();
-        Socket clientSocket;
-        while (this.running) {
-            try {
-                clientSocket = this.socket.accept();
-            } catch (SocketTimeoutException e) {
-                continue;
+            while (this.running) {
+                try {
+                    clientSocket = serverSocket.accept();
+                } catch (SocketTimeoutException e) {
+                    continue;
+                }
+                var clientConnection = new GuildsTimeMonitorConnection(clientSocket);
+                clientConnections.add(clientConnection);
+                clientConnection.startDaemon();
             }
-            var gtClient = new GuildsTimeMonitorConnection(clientSocket);
-            gtClients.add(gtClient);
-            new Thread(gtClient).start();
-        }
 
-        for (var gtClient : gtClients) {
-            gtClient.stop();
+            for (var conn : clientConnections) {
+                conn.shutdown();
+            }
         }
-        this.close();
         LOG.info("{} stopped", this.getClass().getSimpleName());
     }
 
@@ -62,9 +60,7 @@ public class GuildsTimeMonitor implements Runnable, Closeable {
     }
 
     @Override
-    public void close() throws IOException {
-        if (this.socket != null && !this.socket.isClosed()) {
-            this.socket.close();
-        }
+    public void close() {
+        this.stop();
     }
 }

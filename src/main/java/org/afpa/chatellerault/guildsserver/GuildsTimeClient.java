@@ -25,9 +25,10 @@ public class GuildsTimeClient implements Runnable, Closeable {
         this.socketAddress = new InetSocketAddress("228.5.6.7", this.port);
         this.socket = new MulticastSocket(port);
         this.socket.setSoTimeout(1000);
+        this.socket.setTimeToLive(3);
         this.socket.joinGroup(socketAddress, null);
         this.printStream = printStream;
-        this.running = true;
+        this.running = false;
     }
 
     public void start() throws IOException {

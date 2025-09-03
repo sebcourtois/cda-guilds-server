@@ -3,81 +3,96 @@ package org.afpa.chatellerault.guildsserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-public class GuildsTimeMonitorConnection implements Runnable, Closeable {
+public class GuildsTimeMonitorConnection implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitorConnection.class);
 
     private final Socket clientSocket;
+    private Thread thread;
     private volatile boolean running;
 
     public GuildsTimeMonitorConnection(Socket clientSocket) {
         this.clientSocket = clientSocket;
         this.running = false;
+        this.thread = null;
     }
 
-    public void start() throws IOException {
-        this.running = true;
+    public void listen() throws IOException {
         clientSocket.setSoTimeout(500);
-
         String hostName = clientSocket.getInetAddress().getHostName();
-        LOG.info("Listening to {}...", hostName);
+        LOG.info("{} listening to {}...", this.getClass().getSimpleName(), hostName);
 
-        var inStream = clientSocket.getInputStream();
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inStream));
-        PrintStream outStream = new PrintStream(clientSocket.getOutputStream());
-
-        var gtClient = new GuildsTimeClient(outStream);
-        var gtcThread = new Thread(gtClient);
-        gtcThread.start();
-
-        String message;
-        while (this.running) {
-            try {
-                message = bufferedReader.readLine();
-            } catch (SocketTimeoutException e) {
-                continue;
-            }
-            if (message == null) {
-                LOG.info("{} disconnected.", hostName);
-                break;
-            }
-            outStream.printf("from %s: %s%n", hostName, message);
-            switch (message.toLowerCase()) {
-                case "hello" -> gtClient.sayHello();
-                case "bye" -> gtClient.sayBye();
-                case "terminate" -> gtClient.sendMessage("{\"type\":\"terminate\"}");
-            }
-        }
-
-        gtClient.stop();
+        GuildsTimeClient gtClient = null;
+        Thread gtcThread = null;
         try {
-            gtcThread.join();
-        } catch (InterruptedException e) {
-            LOG.info("{} thread already interrupted", gtClient.getClass().getSimpleName());
+            var outStream = new PrintStream(clientSocket.getOutputStream());
+            gtClient = new GuildsTimeClient(outStream);
+            gtcThread = new Thread(gtClient);
+            gtcThread.start();
+            var inStream = clientSocket.getInputStream();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inStream));
+
+            String message;
+            this.running = true;
+            while (this.running) {
+                try {
+                    message = bufferedReader.readLine();
+                } catch (SocketTimeoutException e) {
+                    continue;
+                }
+                if (message == null) {
+                    LOG.info("{} disconnected.", hostName);
+                    this.running = false;
+                    continue;
+                }
+                outStream.printf("from %s: %s%n", hostName, message);
+                switch (message.toLowerCase()) {
+                    case "hello" -> gtClient.sayHello();
+                    case "bye" -> gtClient.sayBye();
+                    case "terminate" -> gtClient.sendMessage("{\"type\":\"terminate\"}");
+                }
+            }
+        } finally {
+            if (gtcThread != null) {
+                gtClient.stop();
+                try {
+                    gtcThread.join(); // wait for GuildsTimeClient to stop
+                } catch (InterruptedException e) {
+                    LOG.warn("{} thread already interrupted !?", gtClient.getClass().getSimpleName());
+                }
+            }
+            if (!clientSocket.isClosed()) clientSocket.close();
+            LOG.debug("{} stopped", this.getClass().getSimpleName());
         }
-        this.close();
     }
 
-    public void stop() {
+    public void shutdown() {
         this.running = false;
+        if (this.thread != null) {
+            try {
+                this.thread.join(); // wait for GuildsTimeClient to stop
+            } catch (InterruptedException e) {
+                LOG.warn("{} thread already interrupted !?", this.getClass().getSimpleName());
+            }
+        }
+    }
+
+    public void startDaemon() {
+        this.thread = Thread.ofVirtual().start(this);
     }
 
     @Override
     public void run() {
         try {
-            this.start();
+            this.listen();
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void close() throws IOException {
-        if (this.clientSocket != null && !this.clientSocket.isClosed()) {
-            this.clientSocket.close();
         }
     }
 }
