@@ -65,7 +65,7 @@ public class GuildsTimeClient implements Runnable {
 
     public void startDaemon() {
         if (this.thread != null) throw new RuntimeException("daemon already started");
-        this.thread = Thread.ofVirtual().start(this);
+        this.thread = Thread.ofPlatform().daemon().start(this);
     }
 
     public void shutdown() {
