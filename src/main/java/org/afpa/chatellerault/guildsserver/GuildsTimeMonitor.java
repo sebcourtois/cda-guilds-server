@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
@@ -95,7 +96,12 @@ class GuildsTimeMonitorConnection implements Runnable {
                     message = bufferedReader.readLine();
                 } catch (SocketTimeoutException e) {
                     continue;
+                } catch (SocketException e) {
+                    LOG.error(e);
+                    this.running = false;
+                    continue;
                 }
+
                 if (message == null) {
                     LOG.info("{} disconnected.", hostName);
                     this.running = false;
@@ -111,7 +117,7 @@ class GuildsTimeMonitorConnection implements Runnable {
         } finally {
             if (gtClient != null) gtClient.shutdown();
             if (!clientSocket.isClosed()) clientSocket.close();
-            LOG.debug("{} stopped", this.getClass().getSimpleName());
+            LOG.info("{} stopped listening to {}", this.getClass().getSimpleName(), hostName);
         }
     }
 
