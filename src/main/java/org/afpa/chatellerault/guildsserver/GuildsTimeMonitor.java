@@ -10,37 +10,40 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
 public class GuildsTimeMonitor implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitor.class);
 
-    private volatile boolean running;
+    private ServerSocket serverSocket;
 
     public GuildsTimeMonitor() {
-        this.running = false;
+        this.serverSocket = null;
+    }
+
+    public boolean isRunning() {
+        return (this.serverSocket != null) && !this.serverSocket.isClosed();
     }
 
     public void start() throws IOException {
         int port = 50505;
         ArrayList<GuildsTimeMonitorConnection> clientConnections = new ArrayList<>();
 
-        try (var serverSocket = new ServerSocket(port)) {
-            serverSocket.setSoTimeout(1000);
+        try (var socket = new ServerSocket(port)) {
+            this.serverSocket = socket;
             LOG.info("{} started on port {}", this.getClass().getSimpleName(), port);
 
-            this.running = true;
             Socket clientSocket;
-            while (this.running) {
+            while (!this.serverSocket.isClosed()) {
                 try {
                     clientSocket = serverSocket.accept();
-                } catch (SocketTimeoutException e) {
-                    continue;
+                } catch (SocketException e) {
+                    if (!this.serverSocket.isClosed()) LOG.error(e);
+                    break;
                 }
-                var clientConnection = new GuildsTimeMonitorConnection(clientSocket);
-                clientConnection.startDaemon();
-                clientConnections.add(clientConnection);
+                var conn = new GuildsTimeMonitorConnection(clientSocket);
+                conn.startDaemon();
+                clientConnections.add(conn);
             }
             clientConnections.forEach(GuildsTimeMonitorConnection::shutdown);
         }
@@ -48,7 +51,11 @@ public class GuildsTimeMonitor implements Runnable {
     }
 
     public void stop() {
-        this.running = false;
+        try {
+            if (!serverSocket.isClosed()) serverSocket.close();
+        } catch (IOException e) {
+            LOG.info("failed to close client socket", e);
+        }
     }
 
     @Override
@@ -67,16 +74,17 @@ class GuildsTimeMonitorConnection implements Runnable {
 
     private final Socket clientSocket;
     private Thread thread;
-    private volatile boolean running;
 
     public GuildsTimeMonitorConnection(Socket clientSocket) {
         this.clientSocket = clientSocket;
-        this.running = false;
         this.thread = null;
     }
 
+    public boolean isRunning() {
+        return !this.clientSocket.isClosed();
+    }
+
     public void listen() throws IOException {
-        clientSocket.setSoTimeout(500);
         String hostName = clientSocket.getInetAddress().getHostName();
         LOG.info("{} listening to {}...", this.getClass().getSimpleName(), hostName);
 
@@ -90,24 +98,18 @@ class GuildsTimeMonitorConnection implements Runnable {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inStream));
 
             String message;
-            this.running = true;
-            while (this.running) {
+            while (!this.clientSocket.isClosed()) {
                 try {
                     message = bufferedReader.readLine();
-                } catch (SocketTimeoutException e) {
-                    continue;
                 } catch (SocketException e) {
-                    LOG.error(e);
-                    this.running = false;
-                    continue;
+                    if (!this.clientSocket.isClosed()) LOG.error(e);
+                    break;
                 }
-
                 if (message == null) {
                     LOG.info("{} disconnected.", hostName);
-                    this.running = false;
-                    continue;
+                    break;
                 }
-                outStream.printf("from %s: %s%n", hostName, message);
+                outStream.printf("sending: %s...%n", message);
                 switch (message.toLowerCase()) {
                     case "hello" -> gtClient.sayHello();
                     case "bye" -> gtClient.sayBye();
@@ -116,19 +118,27 @@ class GuildsTimeMonitorConnection implements Runnable {
             }
         } finally {
             if (gtClient != null) gtClient.shutdown();
-            if (!clientSocket.isClosed()) clientSocket.close();
+            this.closeSocket();
             LOG.info("{} stopped listening to {}", this.getClass().getSimpleName(), hostName);
         }
     }
 
     public void shutdown() {
-        this.running = false;
+        this.closeSocket();
         if (this.thread != null) {
             try {
                 this.thread.join(); // wait for GuildsTimeClient to stop
             } catch (InterruptedException e) {
                 LOG.warn("{} thread already interrupted !?", this.getClass().getSimpleName());
             }
+        }
+    }
+
+    private void closeSocket() {
+        try {
+            if (!clientSocket.isClosed()) clientSocket.close();
+        } catch (IOException e) {
+            LOG.info("failed to close client socket", e);
         }
     }
 
