@@ -1,5 +1,6 @@
 package org.afpa.chatellerault.guildsserver;
 
+import jakarta.annotation.PreDestroy;
 import org.afpa.chatellerault.guildsserver.model.CaravanData;
 import org.afpa.chatellerault.guildsserver.model.HostServerData;
 import org.afpa.chatellerault.guildsserver.model.TradingPostData;
@@ -12,6 +13,7 @@ import org.afpa.chatellerault.guildsserver.service.TradingPosts;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -20,17 +22,28 @@ import java.net.InetAddress;
 import java.util.NoSuchElementException;
 
 @SpringBootApplication
-public class GuildsServerApp {
+public class GuildsServerApp implements ApplicationRunner {
     private static final Logger LOG = LogManager.getLogger(GuildsServerApp.class);
-
     JdbcClient jdbcClient;
+    private final GuildsServer guildsServer;
 
     public GuildsServerApp(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
+        this.guildsServer = new GuildsServer();
     }
 
     public static void main(String[] args) {
         SpringApplication.run(GuildsServerApp.class, args);
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        this.guildsServer.start();
+    }
+
+    @PreDestroy
+    public void stop() {
+        this.guildsServer.stop();
     }
 
     public void populateDb(ApplicationArguments args) throws Exception {
