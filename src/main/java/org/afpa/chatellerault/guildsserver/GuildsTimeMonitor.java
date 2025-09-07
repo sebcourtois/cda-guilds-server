@@ -3,10 +3,7 @@ package org.afpa.chatellerault.guildsserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -39,7 +36,7 @@ public class GuildsTimeMonitor implements Runnable {
                     break;
                 }
                 var conn = new GuildsTimeMonitorConnection(clientSocket);
-                conn.startDaemon();
+                conn.start();
                 clientConnections.add(conn);
             }
             clientConnections.forEach(GuildsTimeMonitorConnection::shutdown);
@@ -63,24 +60,27 @@ class GuildsTimeMonitorConnection implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitorConnection.class);
 
     private final Socket clientSocket;
-    private Thread thread;
+    private volatile Thread thread;
 
     public GuildsTimeMonitorConnection(Socket clientSocket) {
         this.clientSocket = clientSocket;
         this.thread = null;
     }
 
-    public void listen() throws IOException {
+    @Override
+    public void run() {
         String hostName = clientSocket.getInetAddress().toString();
         LOG.info("{} listening to {}...", this.getClass().getSimpleName(), hostName);
 
         GuildsTimeClient gtClient = null;
+        PrintStream outStream = null;
+        InputStream inStream = null;
         try {
-            var outStream = new PrintStream(clientSocket.getOutputStream());
+            outStream = new PrintStream(clientSocket.getOutputStream());
             gtClient = new GuildsTimeClient(outStream);
             gtClient.startDaemon();
 
-            var inStream = clientSocket.getInputStream();
+            inStream = clientSocket.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inStream));
 
             String message;
@@ -102,8 +102,18 @@ class GuildsTimeMonitorConnection implements Runnable {
                     case "terminate" -> gtClient.sendMessage("{\"type\":\"terminate\"}");
                 }
             }
+        } catch (IOException e) {
+            LOG.error("failed reading from {}", this.clientSocket, e);
         } finally {
             if (gtClient != null) gtClient.shutdown();
+            if (outStream != null) outStream.close();
+            if (inStream != null) {
+                try {
+                    inStream.close();
+                } catch (IOException e) {
+                    LOG.info("failed to close input stream", e);
+                }
+            }
             this.closeSocket();
             LOG.info("{} stopped listening to {}", this.getClass().getSimpleName(), hostName);
         }
@@ -128,17 +138,11 @@ class GuildsTimeMonitorConnection implements Runnable {
         }
     }
 
-    public void startDaemon() {
-        if (this.thread != null) throw new RuntimeException("daemon already started");
-        this.thread = Thread.ofPlatform().daemon().start(this);
-    }
-
-    @Override
-    public void run() {
-        try {
-            this.listen();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public void start() {
+        if (this.thread != null && !this.clientSocket.isClosed()) {
+            LOG.info("{} already running", this.getClass().getSimpleName());
+            return;
         }
+        this.thread = Thread.ofPlatform().start(this);
     }
 }

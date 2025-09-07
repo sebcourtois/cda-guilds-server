@@ -17,7 +17,7 @@ public class GuildsTimeClient implements Runnable {
     private final InetSocketAddress socketAddress;
     private final PrintStream printStream;
     private final MulticastSocket socket;
-    private Thread thread;
+    private volatile Thread thread;
 
     public GuildsTimeClient(PrintStream printStream) throws IOException {
         this.port = 5000;
@@ -29,7 +29,8 @@ public class GuildsTimeClient implements Runnable {
         this.thread = null;
     }
 
-    public void listen() throws IOException {
+    @Override
+    public void run() {
         var jsonParser = JsonParserFactory.getJsonParser();
         byte[] buffer = new byte[1000];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -40,6 +41,9 @@ public class GuildsTimeClient implements Runnable {
             } catch (SocketException e) {
                 if (!this.socket.isClosed()) LOG.error(e);
                 break;
+            } catch (IOException e) {
+                LOG.error("failed to receive packet from {}", this.socket, e);
+                continue;
             }
             var received = new String(packet.getData(), 0, packet.getLength());
             var data = jsonParser.parseMap(received);
@@ -54,7 +58,7 @@ public class GuildsTimeClient implements Runnable {
 
     public void startDaemon() {
         if (this.thread != null) throw new RuntimeException("daemon already started");
-        this.thread = Thread.ofPlatform().daemon().start(this);
+        this.thread = Thread.ofPlatform().start(this);
     }
 
     public void shutdown() {
@@ -93,14 +97,5 @@ public class GuildsTimeClient implements Runnable {
         byte[] buffer = message.getBytes();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, this.socketAddress.getAddress(), this.port);
         this.socket.send(packet);
-    }
-
-    @Override
-    public void run() {
-        try {
-            this.listen();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

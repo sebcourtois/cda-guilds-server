@@ -48,6 +48,7 @@ public class GuildsServerApp implements ApplicationRunner {
 
     @PreDestroy
     public void stop() {
+        LOG.info("stopping {}...", this.guildsServer.getClass().getSimpleName());
         this.guildsServer.shutdown();
     }
 

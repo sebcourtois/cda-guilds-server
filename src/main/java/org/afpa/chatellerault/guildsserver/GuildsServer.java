@@ -32,6 +32,10 @@ public class GuildsServer implements Runnable {
     }
 
     public void start() {
+        if (this.thread != null && !this.socket.isClosed()) {
+            LOG.info("{} already running", this.getClass().getSimpleName());
+            return;
+        }
         this.thread = Thread.ofPlatform().start(this);
     }
 
@@ -144,7 +148,7 @@ class RequestManager implements Runnable {
     }
 
     public void start() {
-        if (this.running) {
+        if (this.thread != null && this.running) {
             LOG.info("{} already running", this.getClass().getSimpleName());
             return;
         }
@@ -155,7 +159,7 @@ class RequestManager implements Runnable {
         this.running = false;
         if (this.thread != null) {
             try {
-                this.thread.join(); // wait for GuildsTimeClient to stop
+                this.thread.join();
             } catch (InterruptedException e) {
                 LOG.warn("fail to wait for {}'s thread", this.getClass().getSimpleName(), e);
             }
