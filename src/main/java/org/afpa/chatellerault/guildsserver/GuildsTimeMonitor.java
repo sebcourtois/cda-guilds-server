@@ -21,11 +21,8 @@ public class GuildsTimeMonitor implements Runnable {
         this.serverSocket = null;
     }
 
-    public boolean isRunning() {
-        return (this.serverSocket != null) && !this.serverSocket.isClosed();
-    }
-
-    public void start() throws IOException {
+    @Override
+    public void run() {
         int port = 50505;
         ArrayList<GuildsTimeMonitorConnection> clientConnections = new ArrayList<>();
 
@@ -46,6 +43,8 @@ public class GuildsTimeMonitor implements Runnable {
                 clientConnections.add(conn);
             }
             clientConnections.forEach(GuildsTimeMonitorConnection::shutdown);
+        } catch (IOException e) {
+            LOG.error("failed to create server socket", e);
         }
         LOG.info("{} stopped", this.getClass().getSimpleName());
     }
@@ -55,15 +54,6 @@ public class GuildsTimeMonitor implements Runnable {
             if (!serverSocket.isClosed()) serverSocket.close();
         } catch (IOException e) {
             LOG.info("failed to close client socket", e);
-        }
-    }
-
-    @Override
-    public void run() {
-        try {
-            this.start();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }
@@ -80,12 +70,8 @@ class GuildsTimeMonitorConnection implements Runnable {
         this.thread = null;
     }
 
-    public boolean isRunning() {
-        return !this.clientSocket.isClosed();
-    }
-
     public void listen() throws IOException {
-        String hostName = clientSocket.getInetAddress().getHostName();
+        String hostName = clientSocket.getInetAddress().toString();
         LOG.info("{} listening to {}...", this.getClass().getSimpleName(), hostName);
 
         GuildsTimeClient gtClient = null;

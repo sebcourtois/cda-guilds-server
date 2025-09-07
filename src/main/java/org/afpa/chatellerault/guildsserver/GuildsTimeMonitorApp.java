@@ -13,22 +13,16 @@ public class GuildsTimeMonitorApp implements ApplicationRunner {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitorApp.class);
 
     private GuildsTimeMonitor gtMonitor;
-    private Thread gtMonitorThread;
 
     @Override
     public void run(ApplicationArguments args) {
         this.gtMonitor = new GuildsTimeMonitor();
-        this.gtMonitorThread = Thread.ofPlatform().start(this.gtMonitor);
+        Thread.ofPlatform().start(this.gtMonitor);
     }
 
     @PreDestroy
     public void stop() {
         LOG.info("stopping {}...", this.gtMonitor.getClass().getSimpleName());
         this.gtMonitor.stop();
-        try {
-            this.gtMonitorThread.join();
-        } catch (InterruptedException e) {
-            LOG.info("{} thread already interrupted", this.gtMonitor.getClass().getSimpleName());
-        }
     }
 }
