@@ -56,8 +56,11 @@ public class GuildsTimeClient implements Runnable {
         LOG.debug("{} stopped", this.getClass().getSimpleName());
     }
 
-    public void startDaemon() {
-        if (this.thread != null) throw new RuntimeException("daemon already started");
+    public void start() {
+        if (this.thread != null && !this.socket.isClosed()) {
+            LOG.info("{} already running", this.getClass().getSimpleName());
+            return;
+        }
         this.thread = Thread.ofPlatform().start(this);
     }
 

@@ -78,7 +78,7 @@ class GuildsTimeMonitorConnection implements Runnable {
         try {
             outStream = new PrintStream(clientSocket.getOutputStream());
             gtClient = new GuildsTimeClient(outStream);
-            gtClient.startDaemon();
+            gtClient.start();
 
             inStream = clientSocket.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inStream));
