@@ -18,6 +18,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.NoSuchElementException;
 
@@ -29,7 +30,11 @@ public class GuildsServerApp implements ApplicationRunner {
 
     public GuildsServerApp(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
-        this.guildsServer = new GuildsServer();
+        try {
+            this.guildsServer = new GuildsServer();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void main(String[] args) {
@@ -37,13 +42,13 @@ public class GuildsServerApp implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         this.guildsServer.start();
     }
 
     @PreDestroy
     public void stop() {
-        this.guildsServer.stop();
+        this.guildsServer.shutdown();
     }
 
     public void populateDb(ApplicationArguments args) throws Exception {
