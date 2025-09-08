@@ -53,7 +53,7 @@ public class GuildsTimeClient implements Runnable {
             }
         }
         this.closeSocket();
-        LOG.debug("{} stopped", this.getClass().getSimpleName());
+        LOG.info("{} stopped", this.getClass().getSimpleName());
     }
 
     public void start() {
