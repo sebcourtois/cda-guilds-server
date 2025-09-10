@@ -2,6 +2,7 @@ package org.afpa.chatellerault.guildsserver;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.boot.json.JsonParseException;
 import org.springframework.boot.json.JsonParserFactory;
 
 import java.io.IOException;
@@ -10,50 +11,69 @@ import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
+import java.util.Map;
 
 public class GuildsTimeClient implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeClient.class);
     private final int port;
     private final InetSocketAddress socketAddress;
     private final PrintStream printStream;
-    private final MulticastSocket socket;
+    private MulticastSocket socket;
     private volatile Thread thread;
 
     public GuildsTimeClient(PrintStream printStream) throws IOException {
         this.port = 5000;
         this.socketAddress = new InetSocketAddress("228.5.6.7", this.port);
-        this.socket = new MulticastSocket(port);
-        this.socket.setTimeToLive(3);
-        this.socket.joinGroup(socketAddress, null);
         this.printStream = printStream;
+        this.socket = null;
         this.thread = null;
     }
 
     @Override
     public void run() {
-        var jsonParser = JsonParserFactory.getJsonParser();
-        byte[] buffer = new byte[1000];
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        try {
+            this.socket = new MulticastSocket(this.port);
+            LOG.info("{} started on port {}",
+                    this.getClass().getSimpleName(),
+                    this.socket.getLocalPort()
+            );
+            this.socket.setTimeToLive(3);
+            this.socket.joinGroup(this.socketAddress, null);
 
-        while (!this.socket.isClosed()) {
-            try {
-                this.socket.receive(packet);
-            } catch (SocketException e) {
-                if (!this.socket.isClosed()) LOG.error(e);
-                break;
-            } catch (IOException e) {
-                LOG.error("failed to receive packet from {}", this.socket, e);
-                continue;
+            var jsonParser = JsonParserFactory.getJsonParser();
+            byte[] buffer = new byte[1000];
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+
+            while (!this.socket.isClosed()) {
+                try {
+                    this.socket.receive(packet);
+                } catch (SocketException e) {
+                    if (!this.socket.isClosed()) LOG.error(e);
+                    break;
+                } catch (IOException e) {
+                    LOG.error("failed to receive packet from {}", this.socket, e);
+                    continue;
+                }
+                var received = new String(packet.getData(), 0, packet.getLength());
+
+                Map<String, Object> data;
+                try {
+                    data = jsonParser.parseMap(received);
+                } catch (JsonParseException e) {
+                    this.printStream.println(received);
+                    continue;
+                }
+                String msgType = (String) data.get("type");
+                if (msgType.equals("date")) {
+                    this.printStream.println(data);
+                }
             }
-            var received = new String(packet.getData(), 0, packet.getLength());
-            var data = jsonParser.parseMap(received);
-            String msgType = (String) data.get("type");
-            if (msgType.equals("date")) {
-                this.printStream.println(data);
-            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            this.closeSocket();
+            LOG.info("{} stopped", this.getClass().getSimpleName());
         }
-        this.closeSocket();
-        LOG.info("{} stopped", this.getClass().getSimpleName());
     }
 
     public void start() {
@@ -76,7 +96,7 @@ public class GuildsTimeClient implements Runnable {
     }
 
     private void closeSocket() {
-        if (!this.socket.isClosed()) {
+        if (this.socket != null && !this.socket.isClosed()) {
             try {
                 this.socket.leaveGroup(this.socketAddress, null);
             } catch (IOException e) {

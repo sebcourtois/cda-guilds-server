@@ -17,14 +17,14 @@ import java.util.List;
 
 public class GuildsServer implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GuildsServer.class);
-    private final ServerSocket socket;
+    private ServerSocket socket;
     private final Collection<ClientConnection> clientConnections;
     private final RequestManager requestMan;
     private volatile Thread thread;
     private volatile boolean requestManStarted;
 
     GuildsServer() throws IOException {
-        this.socket = new ServerSocket(50500);
+        this.socket = null;
         this.clientConnections = Collections.synchronizedCollection(new ArrayList<>());
         this.requestMan = new RequestManager(clientConnections);
         this.requestManStarted = false;
@@ -41,7 +41,8 @@ public class GuildsServer implements Runnable {
 
     @Override
     public void run() {
-        try (ServerSocket serverSocket = this.socket) {
+        try (ServerSocket serverSocket = new ServerSocket(50500)) {
+            this.socket = serverSocket;
             LOG.info("{} started on port {}",
                     this.getClass().getSimpleName(),
                     serverSocket.getLocalPort()
@@ -89,7 +90,7 @@ public class GuildsServer implements Runnable {
         this.requestMan.shutdown();
         this.clientConnections.forEach(ClientConnection::close);
         try {
-            this.socket.close();
+            this.closeSocket();
         } catch (IOException e) {
             LOG.info("failed to close {}'s socket", this.getClass().getSimpleName(), e);
         }
@@ -102,6 +103,11 @@ public class GuildsServer implements Runnable {
         }
         LOG.info("{} shutdown done", this.getClass().getSimpleName());
     }
+
+    public void closeSocket() throws IOException {
+        if (this.socket != null && !this.socket.isClosed()) this.socket.close();
+    }
+
 }
 
 class RequestManager implements Runnable {
@@ -133,9 +139,10 @@ class RequestManager implements Runnable {
                         System.out.println(request);
 
                         for (ClientConnection eachClient : clientConnections) {
+                            if (eachClient == client) continue;
                             Thread.ofVirtual().start(new SayHello(
                                     eachClient.getWriter(),
-                                    "%s from %s".formatted(request, eachClient))
+                                    "%nfrom %s:%n>>> %s%n".formatted(client.hostName(), request))
                             );
                         }
                     } catch (IOException e) {
@@ -240,8 +247,12 @@ class ClientConnection implements Serializable {
         }
     }
 
+    public String hostName() {
+        return this.socket.getInetAddress().toString();
+    }
+
     @Override
     public String toString() {
-        return "%s{%s}".formatted(this.getClass().getSimpleName(), this.socket);
+        return "%s{%s}".formatted(this.hostName(), this.socket);
     }
 }
