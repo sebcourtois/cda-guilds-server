@@ -20,7 +20,7 @@ public class GuildsTimeMonitor implements Runnable {
 
     @Override
     public void run() {
-        int port = 50505;
+        int port = 49395;
         ArrayList<GuildsTimeMonitorConnection> clientConnections = new ArrayList<>();
 
         try (var socket = new ServerSocket(port)) {
@@ -48,7 +48,7 @@ public class GuildsTimeMonitor implements Runnable {
 
     public void stop() {
         try {
-            if (!socket.isClosed()) socket.close();
+            if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException e) {
             LOG.info("failed to close client socket", e);
         }

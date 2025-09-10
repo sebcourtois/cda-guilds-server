@@ -41,7 +41,7 @@ public class GuildsServer implements Runnable {
 
     @Override
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(50500)) {
+        try (ServerSocket serverSocket = new ServerSocket(49394)) {
             this.socket = serverSocket;
             LOG.info("{} started on port {}",
                     this.getClass().getSimpleName(),
