@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/bffa93c8-ece8-4cad-8199-b0f39c0bf3de/console_1.sql" value="bffa93c8-ece8-4cad-8199-b0f39c0bf3de" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/postgresql/guildes_db.sql" value="bffa93c8-ece8-4cad-8199-b0f39c0bf3de" />
+  </component>
+</project>

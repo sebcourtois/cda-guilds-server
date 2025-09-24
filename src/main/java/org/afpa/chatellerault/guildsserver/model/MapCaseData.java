@@ -12,15 +12,19 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class CaravanData extends TableRowData {
+public class MapCaseData extends TableRowData {
     UUID id;
-    String name;
-    UUID destinationId;
-    UUID mapCaseId;
+
+    @lombok.Builder.Default
+    long posX = 0;
+    @lombok.Builder.Default
+    long posY = 0;
+
+    UUID biomeId;
 
     @Override
     public String tableName() {
-        return "caravan";
+        return "map_case";
     }
 
     @Override
@@ -31,16 +35,16 @@ public class CaravanData extends TableRowData {
                         UUID.class, this::getId, val -> this.setId((UUID) val)
                 ).isPrimaryKey(true).isGenerated(true).build(),
                 TableFieldSpec.builder(
-                        "name",
-                        String.class, this::getName, val -> this.setName((String) val)
+                        "x",
+                        Long.class, this::getPosX, val -> this.setPosX((long) val)
                 ).build(),
                 TableFieldSpec.builder(
-                        "id_destination",
-                        UUID.class, this::getDestinationId, val -> this.setDestinationId((UUID) val)
+                        "y",
+                        Long.class, this::getPosY, val -> this.setPosY((long) val)
                 ).build(),
                 TableFieldSpec.builder(
-                        "location",
-                        UUID.class, this::getMapCaseId, val -> this.setMapCaseId((UUID) val)
+                        "id_biome",
+                        UUID.class, this::getBiomeId, val -> this.setBiomeId((UUID) val)
                 ).build()
         );
     }

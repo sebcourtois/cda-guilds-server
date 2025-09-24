@@ -15,6 +15,7 @@ import java.util.UUID;
 @Builder
 public class HostServerData extends TableRowData {
     UUID id;
+    String name;
     InetAddress ipAddress;
     int port;
 
@@ -29,6 +30,10 @@ public class HostServerData extends TableRowData {
                 TableFieldSpec.builder("id",
                         UUID.class, this::getId, val -> this.setId((UUID) val)
                 ).isPrimaryKey(true).isGenerated(true).build(),
+                TableFieldSpec.builder(
+                        "name",
+                        String.class, this::getName, val -> this.setName((String) val)
+                ).build(),
                 TableFieldSpec.builder("ip_address",
                         InetAddress.class, this::getIpAddress, val -> this.setIpAddress((InetAddress) val)
                 ).build(),

@@ -85,7 +85,7 @@ public abstract class BaseRepository {
             if (value instanceof InetAddress) {
                 PGobject inet = new PGobject();
                 inet.setType("inet");
-                inet.setValue(((InetAddress) value).getHostName());
+                inet.setValue(((InetAddress) value).getHostAddress());
                 return inet;
             }
             return value;

@@ -4,10 +4,54 @@ CREATE TABLE IF NOT EXISTS "config"
     var_value json
 );
 
+CREATE TABLE IF NOT EXISTS "skill"
+(
+    code  varchar(255) PRIMARY KEY,
+    label varchar(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS "occupation"
+(
+    code  varchar(255) PRIMARY KEY,
+    label varchar(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS "environment"
+(
+    code  varchar(255) PRIMARY KEY,
+    label varchar(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS "season"
+(
+    code  varchar(255) PRIMARY KEY,
+    label varchar(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS "biome"
+(
+    id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name     varchar(255) NOT NULL UNIQUE,
+    code_env varchar(255) REFERENCES "environment" (code)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS "map_case"
+(
+    id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    x        bigint NOT NULL  DEFAULT 0,
+    y        bigint NOT NULL  DEFAULT 0,
+    id_biome uuid REFERENCES "biome" (id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);
+
 CREATE TABLE IF NOT EXISTS "host"
 (
     id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    ip_address inet NOT NULL,
+    name       varchar(255) NOT NULL UNIQUE,
+    ip_address inet         NOT NULL,
     port       int CHECK (port >= 49152 AND port <= 65535),
     UNIQUE (ip_address, port)
 );
@@ -16,10 +60,11 @@ CREATE TABLE IF NOT EXISTS "trading_post"
 (
     id         uuid PRIMARY KEY      DEFAULT gen_random_uuid(),
     name       varchar(255) NOT NULL UNIQUE,
-    location_x bigint       NOT NULL DEFAULT 0,
-    location_y bigint       NOT NULL DEFAULT 0,
     population int          NOT NULL DEFAULT 0 CHECK ( population >= 0 ),
     id_host    uuid         REFERENCES "host" (id)
+                                ON UPDATE CASCADE
+                                ON DELETE SET NULL,
+    location   uuid         REFERENCES map_case (id)
                                 ON UPDATE CASCADE
                                 ON DELETE SET NULL
 );
@@ -67,39 +112,6 @@ CREATE TABLE IF NOT EXISTS "stores"
     PRIMARY KEY (id_trading_post, id_resource)
 );
 
-CREATE TABLE IF NOT EXISTS "skill"
-(
-    code  varchar(255) PRIMARY KEY,
-    label varchar(255) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS "occupation"
-(
-    code  varchar(255) PRIMARY KEY,
-    label varchar(255) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS "environment"
-(
-    code  varchar(255) PRIMARY KEY,
-    label varchar(255) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS "season"
-(
-    code  varchar(255) PRIMARY KEY,
-    label varchar(255) NOT NULL UNIQUE
-);
-
-CREATE TABLE IF NOT EXISTS "biome"
-(
-    id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    name     varchar(255) NOT NULL UNIQUE,
-    code_env varchar(255) REFERENCES "environment" (code)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
-);
-
 CREATE TABLE IF NOT EXISTS "produces"
 (
     id_resource uuid REFERENCES "resource" (id)
@@ -145,15 +157,18 @@ CREATE TABLE IF NOT EXISTS "transportation_type"
 
 CREATE TABLE IF NOT EXISTS "caravan"
 (
-    id          uuid PRIMARY KEY      DEFAULT gen_random_uuid(),
-    name        varchar(255) NOT NULL UNIQUE,
-    location_x  bigint       NOT NULL DEFAULT 0,
-    location_y  bigint       NOT NULL DEFAULT 0,
+    id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name           varchar(255) NOT NULL UNIQUE,
+    location       uuid         REFERENCES map_case (id)
+                                    ON UPDATE CASCADE
+                                    ON DELETE SET NULL,
     id_destination uuid REFERENCES "trading_post" (id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT
+        ON DELETE RESTRICT,
+    id_host        uuid         REFERENCES "host" (id)
+                                    ON UPDATE CASCADE
+                                    ON DELETE SET NULL
 );
-
 
 CREATE TABLE IF NOT EXISTS "transportation"
 (

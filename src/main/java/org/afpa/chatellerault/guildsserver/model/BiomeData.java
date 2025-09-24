@@ -12,15 +12,13 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class CaravanData extends TableRowData {
+public class BiomeData extends TableRowData {
     UUID id;
     String name;
-    UUID destinationId;
-    UUID mapCaseId;
 
     @Override
     public String tableName() {
-        return "caravan";
+        return "biome";
     }
 
     @Override
@@ -33,14 +31,6 @@ public class CaravanData extends TableRowData {
                 TableFieldSpec.builder(
                         "name",
                         String.class, this::getName, val -> this.setName((String) val)
-                ).build(),
-                TableFieldSpec.builder(
-                        "id_destination",
-                        UUID.class, this::getDestinationId, val -> this.setDestinationId((UUID) val)
-                ).build(),
-                TableFieldSpec.builder(
-                        "location",
-                        UUID.class, this::getMapCaseId, val -> this.setMapCaseId((UUID) val)
                 ).build()
         );
     }
