@@ -13,7 +13,7 @@ import org.springframework.test.jdbc.JdbcTestUtils;
 
 import java.net.InetAddress;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 public class HostServersTest {
