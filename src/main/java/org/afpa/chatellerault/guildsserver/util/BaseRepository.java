@@ -5,7 +5,6 @@ import org.postgresql.util.PGobject;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.stereotype.Repository;
 
 import java.net.InetAddress;
 import java.sql.ResultSet;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-@Repository
+
 public abstract class BaseRepository {
 
     public final JdbcClient jdbcClient;
