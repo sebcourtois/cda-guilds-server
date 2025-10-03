@@ -1,15 +1,13 @@
 package org.afpa.chatellerault.guildsserver;
 
-import org.afpa.chatellerault.guildsserver.model.Caravan;
-import org.afpa.chatellerault.guildsserver.model.CaravanData;
-import org.afpa.chatellerault.guildsserver.model.TradingPost;
-import org.afpa.chatellerault.guildsserver.model.TradingPostData;
+import org.afpa.chatellerault.guildsserver.model.*;
 import org.afpa.chatellerault.guildsserver.repository.CaravanRepository;
 import org.afpa.chatellerault.guildsserver.repository.TradingPostRepository;
 import org.afpa.chatellerault.guildsserver.service.Caravans;
 import org.afpa.chatellerault.guildsserver.service.TradingPosts;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +29,16 @@ class GuildsServerAppTests {
         this.jdbcClient = jdbcClient;
     }
 
+    @BeforeEach
+    void clearTables() {
+        JdbcTestUtils.deleteFromTables(this.jdbcClient,
+                CaravanData.builder().build().tableName(),
+                TradingPostData.builder().build().tableName(),
+                MapCaseData.builder().build().tableName(),
+                BiomeData.builder().build().tableName()
+        );
+    }
+
     @Test
     void createOneCaravanWithDestinationAndDeleteIt() throws Exception {
         TradingPosts.setRepository(new TradingPostRepository(this.jdbcClient));
@@ -42,7 +50,7 @@ class GuildsServerAppTests {
         );
         LOG.info(someTradePost);
 
-        assertThat(JdbcTestUtils.countRowsInTable(this.jdbcClient, someTradePost.getData().tableName())).isOne();
+        assertThat(JdbcTestUtils.countRowsInTable(this.jdbcClient, TradingPostData.builder().build().tableName())).isOne();
 
         String caravanName = "Tour de France";
         Caravan someCaravan = Caravans.create(CaravanData.builder()
@@ -52,7 +60,7 @@ class GuildsServerAppTests {
         );
         LOG.info(someCaravan);
 
-        assertThat(JdbcTestUtils.countRowsInTable(this.jdbcClient, someCaravan.getData().tableName())).isOne();
+        assertThat(JdbcTestUtils.countRowsInTable(this.jdbcClient, CaravanData.builder().build().tableName())).isOne();
 
         try {
             Caravan foundCaravan = Caravans.getByName(caravanName);
@@ -63,5 +71,8 @@ class GuildsServerAppTests {
             Caravans.delete(someCaravan);
             TradingPosts.delete(someTradePost);
         }
+
+        assertThat(JdbcTestUtils.countRowsInTable(this.jdbcClient, TradingPostData.builder().build().tableName())).isZero();
+        assertThat(JdbcTestUtils.countRowsInTable(this.jdbcClient, CaravanData.builder().build().tableName())).isZero();
     }
 }

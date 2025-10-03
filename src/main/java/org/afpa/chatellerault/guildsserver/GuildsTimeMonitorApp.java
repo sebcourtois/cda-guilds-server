@@ -22,6 +22,7 @@ public class GuildsTimeMonitorApp implements ApplicationRunner {
 
     @PreDestroy
     public void stop() {
+        if (this.gtMonitor == null) return;
         LOG.info("stopping {}...", this.gtMonitor.getClass().getSimpleName());
         this.gtMonitor.stop();
     }
