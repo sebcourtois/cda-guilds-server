@@ -38,12 +38,12 @@ public class GuildsServerApp implements ApplicationRunner {
         Biomes.setRepository(new BiomeRepository(this.jdbcClient));
         Caravans.setRepository(new CaravanRepository(this.jdbcClient));
         HostServers.setRepository(new HostServerRepository(this.jdbcClient));
-        MapCases.setRepository(new MapCaseRepository(this.jdbcClient));
+        MapTiles.setRepository(new MapTileRepository(this.jdbcClient));
         TradingPosts.setRepository(new TradingPostRepository(this.jdbcClient));
 
         Optional<Path> worldFilePath = singleOptionValueFromArgs(args, "import-world");
         if (worldFilePath.isPresent()) {
-            if (MapCases.getRowCount() > 0) {
+            if (MapTiles.getRowCount() > 0) {
                 LOG.error("A world already exists. Destroy it, first.");
                 System.exit(1);
             }

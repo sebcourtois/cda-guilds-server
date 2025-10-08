@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS "biome"
         ON DELETE RESTRICT
 );
 
-CREATE TABLE IF NOT EXISTS "map_case"
+CREATE TABLE IF NOT EXISTS "map_tile"
 (
     id       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     x        bigint NOT NULL  DEFAULT 0,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS "trading_post"
     id_host    uuid         REFERENCES "host" (id)
                                 ON UPDATE CASCADE
                                 ON DELETE SET NULL,
-    location   uuid         REFERENCES map_case (id)
+    location   uuid         REFERENCES "map_tile" (id)
                                 ON UPDATE CASCADE
                                 ON DELETE SET NULL
 );
@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS "caravan"
 (
     id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name           varchar(255) NOT NULL UNIQUE,
-    location       uuid         REFERENCES map_case (id)
+    location       uuid         REFERENCES "map_tile" (id)
                                     ON UPDATE CASCADE
                                     ON DELETE SET NULL,
     id_destination uuid REFERENCES "trading_post" (id)

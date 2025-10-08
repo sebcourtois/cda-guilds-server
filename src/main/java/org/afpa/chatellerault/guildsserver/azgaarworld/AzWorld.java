@@ -30,15 +30,17 @@ public class AzWorld {
     public static AzWorld fromJson(InputStream jsonStream) throws IOException {
         JsonNode rootNode = new com.fasterxml.jackson.databind.ObjectMapper().readTree(jsonStream);
         ArrayList<AzBurg> burgs = AzWorld.readBurgsFromJsonTree(rootNode);
+        LOG.info("{} burgs", burgs.size());
         ArrayList<AzBiome> biomes = AzWorld.readBiomesFromJsonTree(rootNode);
+        LOG.info("{} biomes", biomes.size());
         ArrayList<AzPackCell> cells = AzWorld.readCellsFromJsonTree(rootNode);
+        LOG.info("{} cells", cells.size());
         return new AzWorld(cells, biomes, burgs);
     }
 
     private static ArrayList<AzPackCell> readCellsFromJsonTree(JsonNode rootNode) {
         JsonNode cellsNode = rootNode.get("pack").get("cells");
         int numCells = cellsNode.size();
-        LOG.info("{} cells", numCells);
         var cells = new ArrayList<AzPackCell>(numCells);
 
         for (var cellNode : cellsNode) {

@@ -12,7 +12,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class MapCaseData extends TableRowData {
+public class MapTileData extends TableRowData {
     UUID id;
 
     @lombok.Builder.Default
@@ -24,7 +24,7 @@ public class MapCaseData extends TableRowData {
 
     @Override
     public String tableName() {
-        return "map_case";
+        return "map_tile";
     }
 
     @Override

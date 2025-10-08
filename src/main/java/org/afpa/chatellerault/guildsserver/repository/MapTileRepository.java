@@ -5,8 +5,8 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class MapCaseRepository extends BaseRepository {
-    public MapCaseRepository(JdbcClient jdbcClient) {
+public class MapTileRepository extends BaseRepository {
+    public MapTileRepository(JdbcClient jdbcClient) {
         super(jdbcClient);
     }
 }
