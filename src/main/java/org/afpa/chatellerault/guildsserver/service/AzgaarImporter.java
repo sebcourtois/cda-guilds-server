@@ -21,9 +21,9 @@ public class AzgaarImporter {
     public static void importWorld(AzWorld azWorld) throws SQLException {
         HashMap<Integer, Biome> importedBiomes = AzgaarImporter.importBiomes(azWorld.biomes());
         LOG.info("Imported biomes: {}/{}", importedBiomes.size(), azWorld.biomes().size());
-        HashMap<Integer, MapCase> importedMapCases = AzgaarImporter.importCells(azWorld.cells(), importedBiomes);
-        LOG.info("Imported map tiles: {}/{}", importedMapCases.size(), azWorld.cells().size());
-        HashMap<Integer, TradingPost> importedTradingPosts = AzgaarImporter.importBurgs(azWorld.burgs(), importedMapCases);
+        HashMap<Integer, MapTile> importedMapTiles = AzgaarImporter.importCells(azWorld.cells(), importedBiomes);
+        LOG.info("Imported map tiles: {}/{}", importedMapTiles.size(), azWorld.cells().size());
+        HashMap<Integer, TradingPost> importedTradingPosts = AzgaarImporter.importBurgs(azWorld.burgs(), importedMapTiles);
         LOG.info("Imported trading posts: {}/{}", importedTradingPosts.size(), azWorld.burgs().size());
     }
 
@@ -39,26 +39,26 @@ public class AzgaarImporter {
         return importedBiomes;
     }
 
-    private static HashMap<Integer, MapCase> importCells(
+    private static HashMap<Integer, MapTile> importCells(
             ArrayList<AzPackCell> azgaarCells,
             HashMap<Integer, Biome> importedBiomes
     ) throws SQLException {
-        var importedMapCases = new HashMap<Integer, MapCase>(azgaarCells.size());
+        var importedMapTiles = new HashMap<Integer, MapTile>(azgaarCells.size());
         for (AzPackCell azCell : azgaarCells) {
-            MapCase mapCase = MapCases.create(MapCaseData.builder()
+            MapTile mapTile = MapTiles.create(MapTileData.builder()
                     .posX((long) azCell.position()[0])
                     .posY((long) azCell.position()[1])
                     .biomeId(importedBiomes.get(azCell.biomeId()).getId())
                     .build()
             );
-            importedMapCases.put(azCell.id(), mapCase);
+            importedMapTiles.put(azCell.id(), mapTile);
         }
-        return importedMapCases;
+        return importedMapTiles;
     }
 
     private static HashMap<Integer, TradingPost> importBurgs(
             ArrayList<AzBurg> azgaarBurgs,
-            HashMap<Integer, MapCase> importedMapCases
+            HashMap<Integer, MapTile> importedMapTiles
     ) throws SQLException {
         var importedTradingPosts = new HashMap<Integer, TradingPost>(azgaarBurgs.size());
         var burgNames = new HashSet<String>();
@@ -71,7 +71,7 @@ public class AzgaarImporter {
             TradingPost tradingPost = TradingPosts.create(TradingPostData.builder()
                     .name(burgName)
                     .population((int) azBurg.population() * 1000)
-                    .mapCaseId(importedMapCases.get(azBurg.cellId()).getId())
+                    .mapTileId(importedMapTiles.get(azBurg.cellId()).getId())
                     .build()
             );
             importedTradingPosts.put(azBurg.id(), tradingPost);

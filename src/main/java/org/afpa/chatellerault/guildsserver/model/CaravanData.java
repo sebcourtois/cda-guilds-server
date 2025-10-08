@@ -16,7 +16,7 @@ public class CaravanData extends TableRowData {
     UUID id;
     String name;
     UUID destinationId;
-    UUID mapCaseId;
+    UUID mapTileId;
 
     @Override
     public String tableName() {
@@ -40,7 +40,7 @@ public class CaravanData extends TableRowData {
                 ).build(),
                 TableFieldSpec.builder(
                         "location",
-                        UUID.class, this::getMapCaseId, val -> this.setMapCaseId((UUID) val)
+                        UUID.class, this::getMapTileId, val -> this.setMapTileId((UUID) val)
                 ).build()
         );
     }

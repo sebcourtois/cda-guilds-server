@@ -34,7 +34,7 @@ class GuildsServerAppTests {
         JdbcTestUtils.deleteFromTables(this.jdbcClient,
                 CaravanData.builder().build().tableName(),
                 TradingPostData.builder().build().tableName(),
-                MapCaseData.builder().build().tableName(),
+                MapTileData.builder().build().tableName(),
                 BiomeData.builder().build().tableName()
         );
     }

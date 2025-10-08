@@ -3,10 +3,10 @@ package org.afpa.chatellerault.guildsserver.service;
 import org.afpa.chatellerault.guildsserver.azgaarworld.AzWorld;
 import org.afpa.chatellerault.guildsserver.model.BiomeData;
 import org.afpa.chatellerault.guildsserver.model.CaravanData;
-import org.afpa.chatellerault.guildsserver.model.MapCaseData;
+import org.afpa.chatellerault.guildsserver.model.MapTileData;
 import org.afpa.chatellerault.guildsserver.model.TradingPostData;
 import org.afpa.chatellerault.guildsserver.repository.BiomeRepository;
-import org.afpa.chatellerault.guildsserver.repository.MapCaseRepository;
+import org.afpa.chatellerault.guildsserver.repository.MapTileRepository;
 import org.afpa.chatellerault.guildsserver.repository.TradingPostRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,11 +35,11 @@ class AzgaarImporterTest {
         JdbcTestUtils.deleteFromTables(this.jdbcClient,
                 CaravanData.builder().build().tableName(),
                 TradingPostData.builder().build().tableName(),
-                MapCaseData.builder().build().tableName(),
+                MapTileData.builder().build().tableName(),
                 BiomeData.builder().build().tableName()
         );
         Biomes.setRepository(new BiomeRepository(this.jdbcClient));
-        MapCases.setRepository(new MapCaseRepository(this.jdbcClient));
+        MapTiles.setRepository(new MapTileRepository(this.jdbcClient));
         TradingPosts.setRepository(new TradingPostRepository(this.jdbcClient));
 
         InputStream jsonStream = new ClassPathResource("azgaar_world.json").getInputStream();

@@ -20,7 +20,7 @@ public class TradingPostData extends TableRowData {
     int population = 0;
 
     UUID hostId;
-    UUID mapCaseId;
+    UUID mapTileId;
 
     @Override
     public String tableName() {
@@ -48,7 +48,7 @@ public class TradingPostData extends TableRowData {
                 ).build(),
                 TableFieldSpec.builder(
                         "location",
-                        UUID.class, this::getMapCaseId, val -> this.setMapCaseId((UUID) val)
+                        UUID.class, this::getMapTileId, val -> this.setMapTileId((UUID) val)
                 ).build()
         );
     }
