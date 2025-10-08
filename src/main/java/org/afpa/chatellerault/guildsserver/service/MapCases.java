@@ -21,4 +21,8 @@ public class MapCases {
     public static int delete(MapCase mapCase) {
         return repository.delete(mapCase.getData());
     }
+
+    public static int getRowCount() {
+        return repository.numberOfRowsInTable(MapCaseData.builder().build().tableName());
+    }
 }

@@ -52,11 +52,17 @@ public abstract class BaseRepository {
         String pkCondition = tableRow.getPrimaryFields().stream()
                 .map(field -> "\"%s\" = ?".formatted(field.getName()))
                 .collect(Collectors.joining(" AND "));
+
         String sql = """
                 DELETE FROM "%s" WHERE %s;
                 """.formatted(tableRow.tableName(), pkCondition);
 
         return this.jdbcClient.sql(sql).params(tableRow.getPrimaryKeys()).update();
+    }
+
+    public int numberOfRowsInTable(String tableName) {
+        String sql = "SELECT COUNT(0) FROM \"%s\";".formatted(tableName);
+        return this.jdbcClient.sql(sql).query(Integer.class).single();
     }
 
     public TableRowMapper rowMapper(Supplier<TableMappedObj> instanceBuilder) {
