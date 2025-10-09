@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Profile;
 
 @Profile("!test")
 //@org.springframework.stereotype.Component
-public class SillyMulticastServerApp implements ApplicationRunner {
-    private static final Logger LOG = LogManager.getLogger(SillyMulticastServerApp.class);
+public class SillyMulticastServerRunner implements ApplicationRunner {
+    private static final Logger LOG = LogManager.getLogger(SillyMulticastServerRunner.class);
 
     @Override
     public void run(ApplicationArguments args) {

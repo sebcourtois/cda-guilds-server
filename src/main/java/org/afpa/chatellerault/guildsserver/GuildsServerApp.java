@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +34,20 @@ public class GuildsServerApp implements ApplicationRunner {
         SpringApplication.run(GuildsServerApp.class, args);
     }
 
+    static private Optional<Path> singleOptionValueFromArgs(ApplicationArguments args, String optionName) {
+        if (!args.containsOption(optionName)) return Optional.empty();
+        List<String> optionValues = args.getOptionValues(optionName);
+        if (optionValues.isEmpty()) {
+            String msg = "No value passed to command-line option: '%s'".formatted(optionName);
+            throw new RuntimeException(msg);
+        }
+        if (optionValues.size() > 1) {
+            String msg = "More than one value passed to command-line option: '%s'".formatted(optionName);
+            throw new RuntimeException(msg);
+        }
+        return Optional.of(Path.of(optionValues.getFirst()));
+    }
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         Biomes.setRepository(new BiomeRepository(this.jdbcClient));
@@ -40,6 +55,8 @@ public class GuildsServerApp implements ApplicationRunner {
         HostServers.setRepository(new HostServerRepository(this.jdbcClient));
         MapTiles.setRepository(new MapTileRepository(this.jdbcClient));
         TradingPosts.setRepository(new TradingPostRepository(this.jdbcClient));
+
+        System.out.println(Arrays.toString(args.getSourceArgs()));
 
         Optional<Path> worldFilePath = singleOptionValueFromArgs(args, "import-world");
         if (worldFilePath.isPresent()) {
@@ -52,20 +69,6 @@ public class GuildsServerApp implements ApplicationRunner {
         }
 
         this.guildsServer.start();
-    }
-
-    static private Optional<Path> singleOptionValueFromArgs(ApplicationArguments args, String optionName) {
-        if (!args.containsOption(optionName)) return Optional.empty();
-        List<String> optionValues = args.getOptionValues(optionName);
-        if (optionValues.isEmpty()) {
-            String msg = "No value passed to command-line option: '%s'".formatted(optionName);
-            throw new RuntimeException(msg);
-        }
-        if (optionValues.size() > 1 ) {
-            String msg = "More than one value passed to command-line option: '%s'".formatted(optionName);
-            throw new RuntimeException(msg);
-        }
-        return Optional.of(Path.of(optionValues.getFirst()));
     }
 
     @PreDestroy
