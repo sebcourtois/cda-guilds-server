@@ -10,7 +10,7 @@ import java.net.InetAddress;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
@@ -41,11 +41,9 @@ public abstract class BaseRepository {
                 String.join("\", \"", fieldNames),
                 String.join(", ", valuePlaceholders)
         );
-        var rowMap = this.jdbcClient.sql(sql)
+        this.jdbcClient.sql(sql)
                 .paramSource(sqlParamSource)
-                .query(tableRow.rowMapper()).single();
-
-        tableRow.loadFromRowMap(rowMap);
+                .query(this.rowMapper(tableRow)).single();
     }
 
     public int delete(TableMappedObj tableRow) {
@@ -65,23 +63,24 @@ public abstract class BaseRepository {
         return this.jdbcClient.sql(sql).query(Integer.class).single();
     }
 
-    public TableRowMapper rowMapper(Supplier<TableMappedObj> instanceBuilder) {
-        return new TableRowMapper(instanceBuilder);
+    public TableRowMapper rowMapper(TableMappedObj tableMappedObj) {
+        return new TableRowMapper(tableMappedObj);
     }
 
     public static class TableRowMapper implements RowMapper<TableMappedObj> {
-        private final Supplier<TableMappedObj> instanceBuilder;
+        private final TableMappedObj tableMappedObj;
 
-        public TableRowMapper(Supplier<TableMappedObj> instanceBuilder) {
-            this.instanceBuilder = instanceBuilder;
+        public TableRowMapper(TableMappedObj tableMappedObj) {
+            this.tableMappedObj = tableMappedObj;
         }
 
         @Override
         public TableMappedObj mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
-            var tableRow = this.instanceBuilder.get();
-            var rowMap = tableRow.rowMapper().mapRow(res, rowNum);
-            tableRow.loadFromRowMap(rowMap);
-            return tableRow;
+            for (TableFieldSpec fieldSpec : this.tableMappedObj.getTableFields()) {
+                Consumer<Object> fieldSetter = fieldSpec.getSetter();
+                fieldSetter.accept(res.getObject(fieldSpec.getName(), fieldSpec.getJavaType()));
+            }
+            return this.tableMappedObj;
         }
     }
 
@@ -96,7 +95,6 @@ public abstract class BaseRepository {
             return value;
         }
     }
-
 }
 
 

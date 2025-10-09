@@ -1,7 +1,5 @@
 package org.afpa.chatellerault.guildsserver.util;
 
-import org.springframework.jdbc.core.RowMapper;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -16,12 +14,6 @@ public interface TableMappedObj {
     List<TableFieldSpec> getPrimaryFields() throws NoSuchElementException;
 
     List<Object> getPrimaryKeys();
-
-    TableRowMap toRowMap();
-
-    RowMapper<TableRowMap> rowMapper();
-
-    void loadFromRowMap(TableRowMap tableRow);
 
 }
 

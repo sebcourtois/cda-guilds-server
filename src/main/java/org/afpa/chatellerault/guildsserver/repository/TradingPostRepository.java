@@ -21,14 +21,14 @@ public class TradingPostRepository extends BaseRepository {
 
         return this.jdbcClient.sql(statement)
                 .param(someName)
-                .query(this.rowMapper(TradingPostData.builder()::build))
+                .query(this.rowMapper(TradingPostData.builder().build()))
                 .optional();
     }
 
     public Optional<TableMappedObj> findById(UUID someId) {
         String statement = "SELECT * FROM trading_post WHERE id = ?";
 
-        var rowMapper = this.rowMapper(TradingPostData.builder()::build);
+        var rowMapper = this.rowMapper(TradingPostData.builder().build());
         return this.jdbcClient.sql(statement)
                 .param(someId)
                 .query(rowMapper)

@@ -22,7 +22,7 @@ public class CaravanRepository extends BaseRepository {
 
         return this.jdbcClient.sql(statement)
                 .param(caravanName)
-                .query(this.rowMapper(CaravanData.builder()::build))
+                .query(this.rowMapper(CaravanData.builder().build()))
                 .optional();
     }
 }
