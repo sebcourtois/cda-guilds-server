@@ -25,7 +25,7 @@ public class TradingPosts {
     }
 
     public static Optional<TradingPost> findById(UUID someId) {
-        var tradingPostData = repository.findById(someId);
-        return tradingPostData.map(data -> new TradingPost((TradingPostData) data, repository));
+        Optional<TradingPostData> tradingPostData = repository.findById(someId);
+        return tradingPostData.map((TradingPostData data) -> new TradingPost(data, repository));
     }
 }

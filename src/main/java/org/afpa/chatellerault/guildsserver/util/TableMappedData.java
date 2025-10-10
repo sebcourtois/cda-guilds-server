@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
-public abstract class TableRowData implements TableMappedObj {
+public abstract class TableMappedData implements TableMappedObj {
     private List<TableFieldSpec> $primaryFields;
     private List<TableFieldSpec> $tableFields;
 
@@ -14,14 +14,14 @@ public abstract class TableRowData implements TableMappedObj {
 
     public final List<TableFieldSpec> getTableFields() {
         if (this.$tableFields != null) return this.$tableFields;
-        var fieldsConfig = this.tableFields();
+        List<TableFieldSpec> fieldsConfig = this.tableFields();
         this.$tableFields = fieldsConfig;
         return fieldsConfig;
     }
 
     public final List<TableFieldSpec> getPrimaryFields() throws NoSuchElementException {
         if (this.$primaryFields != null) return this.$primaryFields;
-        var fields = this.getTableFields().stream()
+        List<TableFieldSpec> fields = this.getTableFields().stream()
                 .filter(TableFieldSpec::isPrimaryKey)
                 .toList();
 

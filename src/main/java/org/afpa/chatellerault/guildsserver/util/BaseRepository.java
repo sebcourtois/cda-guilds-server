@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
-public abstract class BaseRepository {
+public abstract class BaseRepository<T extends TableMappedData> {
 
     public final JdbcClient jdbcClient;
 
@@ -22,7 +22,7 @@ public abstract class BaseRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    public void create(TableMappedObj tableRow) throws SQLException {
+    public void create(T tableRow) throws SQLException {
         var sqlParamSource = new MapSqlParameterSource();
         var pgObjMapper = new PGobjectMapper();
         for (TableFieldSpec field : tableRow.getTableFields()) {
@@ -46,7 +46,7 @@ public abstract class BaseRepository {
                 .query(this.rowMapper(tableRow)).single();
     }
 
-    public int delete(TableMappedObj tableRow) {
+    public int delete(T tableRow) {
         String pkCondition = tableRow.getPrimaryFields().stream()
                 .map(field -> "\"%s\" = ?".formatted(field.getName()))
                 .collect(Collectors.joining(" AND "));
@@ -63,19 +63,19 @@ public abstract class BaseRepository {
         return this.jdbcClient.sql(sql).query(Integer.class).single();
     }
 
-    public TableRowMapper rowMapper(TableMappedObj tableMappedObj) {
-        return new TableRowMapper(tableMappedObj);
+    public TableRowMapper<T> rowMapper(T tableMappedObj) {
+        return new TableRowMapper<>(tableMappedObj);
     }
 
-    public static class TableRowMapper implements RowMapper<TableMappedObj> {
-        private final TableMappedObj tableMappedObj;
+    public static class TableRowMapper<T extends TableMappedData> implements RowMapper<T> {
+        private final T tableMappedObj;
 
-        public TableRowMapper(TableMappedObj tableMappedObj) {
+        public TableRowMapper(T tableMappedObj) {
             this.tableMappedObj = tableMappedObj;
         }
 
         @Override
-        public TableMappedObj mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
+        public T mapRow(@NonNull ResultSet res, int rowNum) throws SQLException {
             for (TableFieldSpec fieldSpec : this.tableMappedObj.getTableFields()) {
                 Consumer<Object> fieldSetter = fieldSpec.getSetter();
                 fieldSetter.accept(res.getObject(fieldSpec.getName(), fieldSpec.getJavaType()));

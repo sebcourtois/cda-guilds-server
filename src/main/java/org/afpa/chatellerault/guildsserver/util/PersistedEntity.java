@@ -2,7 +2,7 @@ package org.afpa.chatellerault.guildsserver.util;
 
 import lombok.Getter;
 
-public abstract class PersistedEntity<D extends TableMappedObj, R extends BaseRepository> {
+public abstract class PersistedEntity<D extends TableMappedData, R extends BaseRepository<D>> {
     @Getter
     protected final D data;
     @Getter

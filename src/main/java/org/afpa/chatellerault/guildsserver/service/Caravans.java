@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class Caravans {
@@ -24,11 +25,11 @@ public class Caravans {
     }
 
     public static Caravan getByName(String someName) throws NoSuchElementException {
-        var caravanData = repository.findByName(someName);
+        Optional<CaravanData> caravanData = repository.findByName(someName);
         if (caravanData.isEmpty()) throw new NoSuchElementException(
                 "No such %s named: '%s'".formatted(Caravan.class.getName(), someName)
         );
-        return new Caravan((CaravanData) caravanData.get(), repository);
+        return new Caravan(caravanData.get(), repository);
     }
 
 }
