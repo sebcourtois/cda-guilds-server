@@ -20,7 +20,7 @@ public class TradingPosts {
         return new TradingPost(data, repository);
     }
 
-    public static int delete(TradingPost tradingPost) {
+    public static int delete(TradingPost tradingPost) throws SQLException {
         return repository.delete(tradingPost.getData());
     }
 

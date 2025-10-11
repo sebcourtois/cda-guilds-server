@@ -2,7 +2,7 @@ package org.afpa.chatellerault.guildsserver.model;
 
 import org.afpa.chatellerault.guildsserver.repository.CaravanRepository;
 import org.afpa.chatellerault.guildsserver.service.TradingPosts;
-import org.afpa.chatellerault.guildsserver.util.PersistedEntity;
+import org.afpa.chatellerault.guildsserver.core.BaseEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 
-public class Caravan extends PersistedEntity<CaravanData, CaravanRepository> {
+public class Caravan extends BaseEntity<CaravanData> {
 
     private static final Logger LOG = LogManager.getLogger(Caravan.class);
     TradingPost destination;

@@ -20,7 +20,7 @@ public class Caravans {
         return new Caravan(data, repository);
     }
 
-    public static int delete(Caravan caravan) {
+    public static int delete(Caravan caravan) throws SQLException {
         return repository.delete(caravan.getData());
     }
 

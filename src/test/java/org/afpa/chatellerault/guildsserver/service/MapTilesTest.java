@@ -24,13 +24,12 @@ public class MapTilesTest {
 
     @BeforeEach
     void setUp() {
-        JdbcTestUtils.deleteFromTables(this.jdbcClient, MapTileData.builder().build().tableName());
         MapTiles.setRepository(new MapTileRepository(this.jdbcClient));
     }
 
     @AfterEach
     void tearDown() {
-        JdbcTestUtils.deleteFromTables(this.jdbcClient, MapTileData.builder().build().tableName());
+        JdbcTestUtils.deleteFromTables(this.jdbcClient, MapTileData.MapTileTable.name);
     }
 
     @Test
@@ -42,6 +41,7 @@ public class MapTilesTest {
         MapTile myMapTile = MapTiles.create(data);
 
         assertThat(myMapTile.getId()).isNotNull();
-        assertThat(JdbcTestUtils.countRowsInTable(this.jdbcClient, MapTileData.builder().build().tableName())).isOne();
+        assertThat(JdbcTestUtils.countRowsInTable(
+                this.jdbcClient, MapTileData.MapTileTable.name)).isOne();
     }
 }

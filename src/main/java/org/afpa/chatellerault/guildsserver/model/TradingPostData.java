@@ -2,17 +2,15 @@ package org.afpa.chatellerault.guildsserver.model;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
-import org.afpa.chatellerault.guildsserver.util.TableMappedData;
+import org.afpa.chatellerault.guildsserver.core.TableConfig;
+import org.afpa.chatellerault.guildsserver.core.TableConfigField;
 
 import java.util.List;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class TradingPostData extends TableMappedData {
+public class TradingPostData {
     UUID id;
     String name;
 
@@ -22,34 +20,42 @@ public class TradingPostData extends TableMappedData {
     UUID hostId;
     UUID mapTileId;
 
-    @Override
-    public String tableName() {
-        return "trading_post";
-    }
-
-    @Override
-    public List<TableFieldSpec> tableFields() {
-        return List.of(
-                TableFieldSpec.builder(
-                        "id",
-                        UUID.class, this::getId, val -> this.setId((UUID) val)
+    public static final class TradingPostTable extends TableConfig<TradingPostData> {
+        public static final String
+                name = "trading_post";
+        public static final List<TableConfigField<TradingPostData, ?>>
+                fields = List.of(
+                TableConfigField.builder(
+                        "id", UUID.class,
+                        TradingPostData::getId,
+                        TradingPostData::setId
                 ).isPrimaryKey(true).isGenerated(true).build(),
-                TableFieldSpec.builder(
-                        "name",
-                        String.class, this::getName, val -> this.setName((String) val)
+                TableConfigField.builder(
+                        "name", String.class,
+                        TradingPostData::getName,
+                        TradingPostData::setName
                 ).build(),
-                TableFieldSpec.builder(
-                        "population",
-                        Integer.class, this::getPopulation, val -> this.setPopulation((int) val)
+                TableConfigField.builder(
+                        "population", Integer.class,
+                        TradingPostData::getPopulation,
+                        TradingPostData::setPopulation
                 ).build(),
-                TableFieldSpec.builder(
-                        "id_host",
-                        UUID.class, this::getHostId, val -> this.setHostId((UUID) val)
+                TableConfigField.builder(
+                        "id_host", UUID.class,
+                        TradingPostData::getHostId,
+                        TradingPostData::setHostId
                 ).build(),
-                TableFieldSpec.builder(
-                        "location",
-                        UUID.class, this::getMapTileId, val -> this.setMapTileId((UUID) val)
+                TableConfigField.builder(
+                        "location", UUID.class,
+                        TradingPostData::getMapTileId,
+                        TradingPostData::setMapTileId
                 ).build()
         );
+
+        public TradingPostTable() {
+            super(name, fields);
+        }
     }
+
+
 }

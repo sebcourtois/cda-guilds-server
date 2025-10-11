@@ -2,17 +2,15 @@ package org.afpa.chatellerault.guildsserver.model;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
-import org.afpa.chatellerault.guildsserver.util.TableMappedData;
+import org.afpa.chatellerault.guildsserver.core.TableConfig;
+import org.afpa.chatellerault.guildsserver.core.TableConfigField;
 
 import java.util.List;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class MapTileData extends TableMappedData {
+public class MapTileData {
     UUID id;
 
     @lombok.Builder.Default
@@ -22,30 +20,36 @@ public class MapTileData extends TableMappedData {
 
     UUID biomeId;
 
-    @Override
-    public String tableName() {
-        return "map_tile";
-    }
-
-    @Override
-    public List<TableFieldSpec> tableFields() {
-        return List.of(
-                TableFieldSpec.builder(
-                        "id",
-                        UUID.class, this::getId, val -> this.setId((UUID) val)
+    public static final class MapTileTable extends TableConfig<MapTileData> {
+        public static final String
+                name = "map_tile";
+        public static final List<TableConfigField<MapTileData, ?>>
+                fields = List.of(
+                TableConfigField.builder(
+                        "id", UUID.class,
+                        MapTileData::getId,
+                        MapTileData::setId
                 ).isPrimaryKey(true).isGenerated(true).build(),
-                TableFieldSpec.builder(
-                        "x",
-                        Long.class, this::getPosX, val -> this.setPosX((long) val)
+                TableConfigField.builder(
+                        "x", Long.class,
+                        MapTileData::getPosX,
+                        MapTileData::setPosX
                 ).build(),
-                TableFieldSpec.builder(
-                        "y",
-                        Long.class, this::getPosY, val -> this.setPosY((long) val)
+                TableConfigField.builder(
+                        "y", Long.class,
+                        MapTileData::getPosY,
+                        MapTileData::setPosY
                 ).build(),
-                TableFieldSpec.builder(
-                        "id_biome",
-                        UUID.class, this::getBiomeId, val -> this.setBiomeId((UUID) val)
+                TableConfigField.builder(
+                        "id_biome", UUID.class,
+                        MapTileData::getBiomeId,
+                        MapTileData::setBiomeId
                 ).build()
         );
+
+        public MapTileTable() {
+            super(name, fields);
+        }
     }
+
 }
