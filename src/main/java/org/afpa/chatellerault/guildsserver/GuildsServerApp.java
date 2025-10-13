@@ -21,6 +21,7 @@ import java.util.Optional;
 @SpringBootApplication
 public class GuildsServerApp implements ApplicationRunner {
     private static final Logger LOG = LogManager.getLogger(GuildsServerApp.class);
+
     private final GuildsServer guildsServer;
     private final JdbcClient jdbcClient;
     private final GuildsTimeMonitor timeMonitor;
@@ -57,10 +58,17 @@ public class GuildsServerApp implements ApplicationRunner {
             AzgaarImporter.importWorld(azWorld);
         }
 
-        if (args.containsOption("run")) {
-            this.timeMonitor.start();
-            this.guildsServer.start();
+        if (!args.containsOption("run")) {
+            return;
         }
+
+        this.timeMonitor.start();
+        this.guildsServer.start();
+
+        var game = new GuildsGame(
+                new DevDateProvider(2001, 11, 100)
+        );
+        game.run();
     }
 
     @PreDestroy
