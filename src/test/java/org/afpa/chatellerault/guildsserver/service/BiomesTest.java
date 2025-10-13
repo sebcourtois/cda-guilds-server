@@ -3,7 +3,7 @@ package org.afpa.chatellerault.guildsserver.service;
 import org.afpa.chatellerault.guildsserver.model.Biome;
 import org.afpa.chatellerault.guildsserver.model.BiomeData;
 import org.afpa.chatellerault.guildsserver.repository.BiomeRepository;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,9 +22,9 @@ class BiomesTest {
         Biomes.setRepository(new BiomeRepository(this.jdbcClient));
     }
 
-    @BeforeEach
-    void setUp() {
-        JdbcTestUtils.deleteFromTables(this.jdbcClient, BiomeData.builder().build().tableName());
+    @AfterEach
+    void tearDown() {
+        JdbcTestUtils.deleteFromTables(this.jdbcClient, BiomeData.BiomeTable.name);
     }
 
     @Test

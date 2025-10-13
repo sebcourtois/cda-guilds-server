@@ -18,7 +18,7 @@ public class Biomes {
         return new Biome(data, repository);
     }
 
-    public static int delete(Biome biome) {
+    public static int delete(Biome biome) throws SQLException {
         return repository.delete(biome.getData());
     }
 }

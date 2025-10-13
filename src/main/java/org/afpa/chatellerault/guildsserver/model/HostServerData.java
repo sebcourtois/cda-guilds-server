@@ -2,44 +2,50 @@ package org.afpa.chatellerault.guildsserver.model;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.afpa.chatellerault.guildsserver.util.TableFieldSpec;
-import org.afpa.chatellerault.guildsserver.util.TableMappedData;
+import org.afpa.chatellerault.guildsserver.core.TableConfig;
+import org.afpa.chatellerault.guildsserver.core.TableConfigField;
 
 import java.net.InetAddress;
 import java.util.List;
 import java.util.UUID;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
-public class HostServerData extends TableMappedData {
+public class HostServerData {
     UUID id;
     String name;
     InetAddress ipAddress;
     int port;
 
-    @Override
-    public String tableName() {
-        return "host";
-    }
-
-    @Override
-    public List<TableFieldSpec> tableFields() {
-        return List.of(
-                TableFieldSpec.builder("id",
-                        UUID.class, this::getId, val -> this.setId((UUID) val)
+    public static final class HostServerTable extends TableConfig<HostServerData> {
+        public static final String
+                name = "host";
+        public static final List<TableConfigField<HostServerData, ?>>
+                fields = List.of(
+                TableConfigField.builder(
+                        "id", UUID.class,
+                        HostServerData::getId,
+                        HostServerData::setId
                 ).isPrimaryKey(true).isGenerated(true).build(),
-                TableFieldSpec.builder(
-                        "name",
-                        String.class, this::getName, val -> this.setName((String) val)
+                TableConfigField.builder(
+                        "name", String.class,
+                        HostServerData::getName,
+                        HostServerData::setName
                 ).build(),
-                TableFieldSpec.builder("ip_address",
-                        InetAddress.class, this::getIpAddress, val -> this.setIpAddress((InetAddress) val)
+                TableConfigField.builder(
+                        "ip_address", InetAddress.class,
+                        HostServerData::getIpAddress,
+                        HostServerData::setIpAddress
                 ).build(),
-                TableFieldSpec.builder("port",
-                        Integer.class, this::getPort, val -> this.setPort((int) val)
+                TableConfigField.builder(
+                        "port", Integer.class,
+                        HostServerData::getPort,
+                        HostServerData::setPort
                 ).build()
         );
+
+        public HostServerTable() {
+            super(name, fields);
+        }
     }
 }

@@ -18,7 +18,7 @@ public class HostServers {
         return new HostServer(data, repository);
     }
 
-    public static int delete(HostServer caravan) {
+    public static int delete(HostServer caravan) throws SQLException {
         return repository.delete(caravan.getData());
     }
 }

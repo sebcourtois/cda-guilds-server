@@ -26,13 +26,12 @@ public class HostServersTest {
 
     @BeforeEach
     void setUp() {
-        JdbcTestUtils.deleteFromTables(this.jdbcClient, HostServerData.builder().build().tableName());
         HostServers.setRepository(new HostServerRepository(this.jdbcClient));
     }
 
     @AfterEach
     void tearDown() {
-        JdbcTestUtils.deleteFromTables(this.jdbcClient, HostServerData.builder().build().tableName());
+        JdbcTestUtils.deleteFromTables(this.jdbcClient, HostServerData.HostServerTable.name);
     }
 
     @Test

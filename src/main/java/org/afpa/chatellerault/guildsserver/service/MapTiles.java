@@ -18,11 +18,11 @@ public class MapTiles {
         return new MapTile(data, repository);
     }
 
-    public static int delete(MapTile mapTile) {
+    public static int delete(MapTile mapTile) throws SQLException {
         return repository.delete(mapTile.getData());
     }
 
     public static int getRowCount() {
-        return repository.numberOfRowsInTable(MapTileData.builder().build().tableName());
+        return repository.getRowCount();
     }
 }

@@ -1,7 +1,7 @@
 package org.afpa.chatellerault.guildsserver.repository;
 
 import org.afpa.chatellerault.guildsserver.model.TradingPostData;
-import org.afpa.chatellerault.guildsserver.util.BaseRepository;
+import org.afpa.chatellerault.guildsserver.core.BaseRepository;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -12,7 +12,7 @@ import java.util.UUID;
 public class TradingPostRepository extends BaseRepository<TradingPostData> {
 
     public TradingPostRepository(JdbcClient jdbcClient) {
-        super(jdbcClient);
+        super(jdbcClient, new TradingPostData.TradingPostTable());
     }
 
     public Optional<TradingPostData> findByName(String someName) {
@@ -27,7 +27,7 @@ public class TradingPostRepository extends BaseRepository<TradingPostData> {
     public Optional<TradingPostData> findById(UUID someId) {
         String statement = "SELECT * FROM trading_post WHERE id = ?";
 
-        TableRowMapper<TradingPostData> rowMapper = this.rowMapper(TradingPostData.builder().build());
+        var rowMapper = this.rowMapper(TradingPostData.builder().build());
         return this.jdbcClient.sql(statement)
                 .param(someId)
                 .query(rowMapper)
