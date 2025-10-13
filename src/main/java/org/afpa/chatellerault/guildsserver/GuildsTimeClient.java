@@ -72,7 +72,7 @@ public class GuildsTimeClient implements Runnable {
             throw new RuntimeException(e);
         } finally {
             this.closeSocket();
-            LOG.info("{} stopped", this.getClass().getSimpleName());
+            LOG.debug("{} no longer running", this.getClass().getSimpleName());
         }
     }
 
@@ -86,6 +86,7 @@ public class GuildsTimeClient implements Runnable {
 
     public void shutdown() {
         this.closeSocket();
+
         if (this.thread != null) {
             try {
                 this.thread.join(); // wait for GuildsTimeClient to stop

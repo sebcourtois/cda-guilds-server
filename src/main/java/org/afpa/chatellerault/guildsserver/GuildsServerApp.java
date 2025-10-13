@@ -13,7 +13,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -24,10 +23,12 @@ public class GuildsServerApp implements ApplicationRunner {
     private static final Logger LOG = LogManager.getLogger(GuildsServerApp.class);
     private final GuildsServer guildsServer;
     private final JdbcClient jdbcClient;
+    private final GuildsTimeMonitor timeMonitor;
 
-    public GuildsServerApp(JdbcClient jdbcClient) throws IOException {
+    public GuildsServerApp(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
         this.guildsServer = new GuildsServer();
+        this.timeMonitor = new GuildsTimeMonitor();
     }
 
     public static void main(String[] args) {
@@ -56,12 +57,22 @@ public class GuildsServerApp implements ApplicationRunner {
             AzgaarImporter.importWorld(azWorld);
         }
 
-        this.guildsServer.start();
+        if (args.containsOption("run")) {
+            this.timeMonitor.start();
+            this.guildsServer.start();
+        }
     }
 
     @PreDestroy
     public void stop() {
-        LOG.info("stopping {}...", this.guildsServer.getClass().getSimpleName());
-        this.guildsServer.shutdown();
+        if (this.timeMonitor.isRunning()) {
+            LOG.info("stopping {}...", this.timeMonitor.getClass().getSimpleName());
+            this.timeMonitor.shutdown();
+        }
+
+        if (this.guildsServer.isRunning()) {
+            LOG.info("stopping {}...", this.guildsServer.getClass().getSimpleName());
+            this.guildsServer.shutdown();
+        }
     }
 }

@@ -1,7 +1,7 @@
 package org.afpa.chatellerault.guildsserver.model;
 
-import org.afpa.chatellerault.guildsserver.repository.TradingPostRepository;
 import org.afpa.chatellerault.guildsserver.core.BaseEntity;
+import org.afpa.chatellerault.guildsserver.repository.TradingPostRepository;
 
 import java.util.UUID;
 

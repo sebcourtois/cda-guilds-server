@@ -17,13 +17,13 @@ import java.util.List;
 
 public class GuildsServer implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GuildsServer.class);
-    private ServerSocket socket;
     private final Collection<ClientConnection> clientConnections;
     private final RequestManager requestMan;
+    private ServerSocket socket;
     private volatile Thread thread;
     private volatile boolean requestManStarted;
 
-    GuildsServer() throws IOException {
+    GuildsServer() {
         this.socket = null;
         this.clientConnections = Collections.synchronizedCollection(new ArrayList<>());
         this.requestMan = new RequestManager(clientConnections);
@@ -73,7 +73,7 @@ public class GuildsServer implements Runnable {
             throw new RuntimeException(e);
         }
         clientConnections.forEach(ClientConnection::close);
-        LOG.info("{} stopped", this.getClass().getSimpleName());
+        LOG.debug("{} no longer running", this.getClass().getSimpleName());
     }
 
     private void closeDisconnectedSockets() {
@@ -94,14 +94,21 @@ public class GuildsServer implements Runnable {
         } catch (IOException e) {
             LOG.info("failed to close {}'s socket", this.getClass().getSimpleName(), e);
         }
+
         if (this.thread != null) {
             try {
-                this.thread.join(); // wait for GuildsTimeClient to stop
+                this.thread.join();
             } catch (InterruptedException e) {
                 LOG.info("failed to wait for {}'s thread", this.getClass().getSimpleName(), e);
             }
         }
+
         LOG.info("{} shutdown done", this.getClass().getSimpleName());
+    }
+
+
+    public boolean isRunning() {
+        return (this.socket != null && !this.socket.isClosed());
     }
 
     public void closeSocket() throws IOException {
@@ -151,7 +158,7 @@ class RequestManager implements Runnable {
                 }
             }
         }
-        LOG.info("{} stopped", this.getClass().getSimpleName());
+        LOG.debug("{} no longer running", this.getClass().getSimpleName());
     }
 
     public void start() {
@@ -164,6 +171,7 @@ class RequestManager implements Runnable {
 
     public void shutdown() {
         this.running = false;
+
         if (this.thread != null) {
             try {
                 this.thread.join();

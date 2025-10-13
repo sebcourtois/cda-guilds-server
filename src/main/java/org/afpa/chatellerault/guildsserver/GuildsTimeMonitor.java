@@ -13,9 +13,11 @@ public class GuildsTimeMonitor implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitor.class);
 
     private ServerSocket socket;
+    private volatile Thread thread;
 
     public GuildsTimeMonitor() {
         this.socket = null;
+        this.thread = null;
     }
 
     @Override
@@ -43,15 +45,40 @@ public class GuildsTimeMonitor implements Runnable {
         } catch (IOException e) {
             LOG.error("failed to create server socket", e);
         }
-        LOG.info("{} stopped", this.getClass().getSimpleName());
+        LOG.debug("{} no longer running", this.getClass().getSimpleName());
     }
 
-    public void stop() {
+    public void start() {
+        if (this.thread != null && !this.socket.isClosed()) {
+            LOG.info("{} already running", this.getClass().getSimpleName());
+            return;
+        }
+        this.thread = Thread.ofPlatform().start(this);
+    }
+
+    public void shutdown() {
         try {
-            if (socket != null && !socket.isClosed()) socket.close();
+            this.closeSocket();
         } catch (IOException e) {
             LOG.info("failed to close client socket", e);
         }
+
+        if (this.thread != null) {
+            try {
+                this.thread.join();
+            } catch (InterruptedException e) {
+                LOG.info("failed to wait for {}'s thread", this.getClass().getSimpleName(), e);
+            }
+        }
+        LOG.info("{} shutdown done", this.getClass().getSimpleName());
+    }
+
+    public boolean isRunning() {
+        return (this.socket != null && !this.socket.isClosed());
+    }
+
+    public void closeSocket() throws IOException {
+        if (this.socket != null && !this.socket.isClosed()) this.socket.close();
     }
 }
 
@@ -121,9 +148,10 @@ class GuildsTimeMonitorConnection implements Runnable {
 
     public void shutdown() {
         this.closeSocket();
+
         if (this.thread != null) {
             try {
-                this.thread.join(); // wait for GuildsTimeClient to stop
+                this.thread.join();
             } catch (InterruptedException e) {
                 LOG.warn("{} thread already interrupted !?", this.getClass().getSimpleName());
             }

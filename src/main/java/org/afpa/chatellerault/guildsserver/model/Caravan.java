@@ -1,8 +1,8 @@
 package org.afpa.chatellerault.guildsserver.model;
 
+import org.afpa.chatellerault.guildsserver.core.BaseEntity;
 import org.afpa.chatellerault.guildsserver.repository.CaravanRepository;
 import org.afpa.chatellerault.guildsserver.service.TradingPosts;
-import org.afpa.chatellerault.guildsserver.core.BaseEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

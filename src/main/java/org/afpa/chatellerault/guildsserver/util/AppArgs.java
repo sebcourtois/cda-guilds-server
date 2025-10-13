@@ -31,4 +31,8 @@ public final class AppArgs {
     public String[] getSourceArgs() {
         return sourceArgs.getSourceArgs();
     }
+
+    public boolean containsOption(String name) {
+        return sourceArgs.containsOption(name);
+    }
 }
