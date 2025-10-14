@@ -1,6 +1,7 @@
 package org.afpa.chatellerault.guildsserver;
 
 import org.afpa.chatellerault.guildsserver.core.GuildsDateProvider;
+import org.afpa.chatellerault.guildsserver.model.GuildsDate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,9 +17,8 @@ public class GuildsGame {
 
     public void run() {
         this.running = true;
-
         while (this.running) {
-            var date = this.dateProvider.nextDate();
+            GuildsDate date = this.dateProvider.nextDate();
             System.out.println(date);
         }
         LOG.info("Game loop exited");

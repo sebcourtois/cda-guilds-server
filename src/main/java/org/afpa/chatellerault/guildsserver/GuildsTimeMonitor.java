@@ -8,6 +8,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class GuildsTimeMonitor implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeMonitor.class);
@@ -100,14 +102,16 @@ class GuildsTimeMonitorConnection implements Runnable {
         LOG.info("{} listening to {}...", this.getClass().getSimpleName(), hostName);
 
         GuildsTimeClient gtClient = null;
-        PrintStream outStream = null;
-        InputStream inStream = null;
         try {
-            outStream = new PrintStream(socket.getOutputStream());
-            gtClient = new GuildsTimeClient(outStream);
+            InputStream inStream = socket.getInputStream();
+            PrintStream outStream = new PrintStream(socket.getOutputStream());
+
+            Consumer<Map<String, Object>> handleMessage = (Map<String, Object> data) -> {
+                if ((data.get("type")).equals("date")) outStream.println(data);
+            };
+            gtClient = new GuildsTimeClient(handleMessage);
             gtClient.start();
 
-            inStream = socket.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inStream));
 
             String message;
@@ -133,14 +137,6 @@ class GuildsTimeMonitorConnection implements Runnable {
             LOG.error("failed reading from {}", this.socket, e);
         } finally {
             if (gtClient != null) gtClient.shutdown();
-            if (outStream != null) outStream.close();
-            if (inStream != null) {
-                try {
-                    inStream.close();
-                } catch (IOException e) {
-                    LOG.info("failed to close input stream", e);
-                }
-            }
             this.closeSocket();
             LOG.info("{} stopped listening to {}", this.getClass().getSimpleName(), hostName);
         }

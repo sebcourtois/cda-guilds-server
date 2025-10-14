@@ -1,79 +1,94 @@
 package org.afpa.chatellerault.guildsserver;
 
+import org.afpa.chatellerault.guildsserver.model.GuildsDate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.json.JsonParseException;
+import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
+import org.springframework.lang.Nullable;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class GuildsTimeClient implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GuildsTimeClient.class);
+    private static final JsonParser jsonParser = JsonParserFactory.getJsonParser();
     private final int port;
     private final InetSocketAddress socketAddress;
-    private final PrintStream printStream;
-    private MulticastSocket socket;
+    private final MulticastSocket socket;
+    private final Consumer<Map<String, Object>> dataConsumer;
     private volatile Thread thread;
 
-    public GuildsTimeClient(PrintStream printStream) throws IOException {
+    public GuildsTimeClient(@Nullable Consumer<Map<String, Object>> dataConsumer) throws IOException {
+        this.dataConsumer = dataConsumer;
         this.port = 5000;
+        this.socket = new MulticastSocket(this.port);
+        this.socket.setTimeToLive(1);
         this.socketAddress = new InetSocketAddress("228.5.6.7", this.port);
-        this.printStream = printStream;
-        this.socket = null;
+        this.socket.joinGroup(this.socketAddress, null);
         this.thread = null;
     }
 
     @Override
     public void run() {
-        try {
-            this.socket = new MulticastSocket(this.port);
-            LOG.info("{} started on port {}",
-                    this.getClass().getSimpleName(),
-                    this.socket.getLocalPort()
-            );
-            this.socket.setTimeToLive(3);
-            this.socket.joinGroup(this.socketAddress, null);
-
-            var jsonParser = JsonParserFactory.getJsonParser();
-            byte[] buffer = new byte[1000];
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-
-            while (!this.socket.isClosed()) {
-                try {
-                    this.socket.receive(packet);
-                } catch (SocketException e) {
-                    if (!this.socket.isClosed()) LOG.error(e);
-                    break;
-                } catch (IOException e) {
-                    LOG.error("failed to receive packet from {}", this.socket, e);
-                    continue;
-                }
-                var received = new String(packet.getData(), 0, packet.getLength());
-
-                Map<String, Object> data;
-                try {
-                    data = jsonParser.parseMap(received);
-                } catch (JsonParseException e) {
-                    this.printStream.println(received);
-                    continue;
-                }
-                String msgType = (String) data.get("type");
-                if (msgType.equals("date")) {
-                    this.printStream.println(data);
-                }
+        LOG.info("{} listening on port {}",
+                this.getClass().getSimpleName(),
+                this.socket.getLocalPort()
+        );
+        while (!this.socket.isClosed()) {
+            Map<String, Object> data;
+            try {
+                data = this.receive();
+            } catch (SocketException e) {
+                if (!this.socket.isClosed()) LOG.error(e);
+                break;
+            } catch (IOException e) {
+                LOG.error("failed to receive packet from {}", this.socket, e);
+                continue;
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            this.closeSocket();
-            LOG.debug("{} no longer running", this.getClass().getSimpleName());
+
+            if (this.dataConsumer != null) {
+                this.dataConsumer.accept(data);
+            }
         }
+        this.closeSocket();
+        LOG.debug("{} no longer running", this.getClass().getSimpleName());
+    }
+
+    public Map<String, Object> receive() throws IOException {
+        byte[] buffer = new byte[1024];
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        this.socket.receive(packet);
+        var received = new String(packet.getData(), 0, packet.getLength());
+
+        Map<String, Object> data;
+        try {
+            data = jsonParser.parseMap(received);
+        } catch (JsonParseException e) {
+            LOG.error("failed to parse received json data", e);
+            data = Map.of("invalid_data", received);
+        }
+        return data;
+    }
+
+    public GuildsDate receiveDate() throws IOException {
+        while (!this.socket.isClosed()) {
+            Map<String, Object> data = this.receive();
+            if (data.get("type").equals("date")) {
+                return GuildsDate.builder()
+                        .year((int) data.get("year"))
+                        .day((int) data.get("day"))
+                        .source((String) data.get("source"))
+                        .build();
+            }
+        }
+        return null;
     }
 
     public void start() {

@@ -1,16 +1,16 @@
-package org.afpa.chatellerault.guildsserver;
+package org.afpa.chatellerault.guildsserver.service;
 
-import org.afpa.chatellerault.guildsserver.core.GuildsDate;
+import org.afpa.chatellerault.guildsserver.model.GuildsDate;
 import org.afpa.chatellerault.guildsserver.core.GuildsDateProvider;
 
-public class DevDateProvider implements GuildsDateProvider {
+public class OfflineDateProvider implements GuildsDateProvider {
     private final int interval;
     private GuildsDate currentDate;
 
-    public DevDateProvider(int startYear, int startDay, int interval) {
+    public OfflineDateProvider(int startYear, int startDay, int interval) {
         this.interval = interval;
         this.currentDate = GuildsDate.builder()
-                .year(startYear).day(startDay).source("local_dev")
+                .year(startYear).day(startDay).source("offline")
                 .build();
     }
 
@@ -33,6 +33,6 @@ public class DevDateProvider implements GuildsDateProvider {
                 .day(nextDay).year(nextYear)
                 .build();
 
-        return  this.currentDate;
+        return this.currentDate;
     }
 }
