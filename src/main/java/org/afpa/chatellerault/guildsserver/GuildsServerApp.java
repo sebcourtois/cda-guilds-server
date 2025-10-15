@@ -2,6 +2,7 @@ package org.afpa.chatellerault.guildsserver;
 
 import jakarta.annotation.PreDestroy;
 import org.afpa.chatellerault.guildsserver.azgaarworld.AzWorld;
+import org.afpa.chatellerault.guildsserver.core.GuildsDateProvider;
 import org.afpa.chatellerault.guildsserver.repository.*;
 import org.afpa.chatellerault.guildsserver.service.*;
 import org.afpa.chatellerault.guildsserver.util.AppArgs;
@@ -21,14 +22,17 @@ import java.util.Optional;
 @SpringBootApplication
 public class GuildsServerApp implements ApplicationRunner {
     private static final Logger LOG = LogManager.getLogger(GuildsServerApp.class);
-    private final GuildsServer guildsServer;
+
     private final JdbcClient jdbcClient;
+    private final GuildsServer guildsServer;
     private final GuildsTimeMonitor timeMonitor;
+    private GuildsTimeClient timeClient;
 
     public GuildsServerApp(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
         this.guildsServer = new GuildsServer();
         this.timeMonitor = new GuildsTimeMonitor();
+        this.timeClient = null;
     }
 
     public static void main(String[] args) {
@@ -57,14 +61,32 @@ public class GuildsServerApp implements ApplicationRunner {
             AzgaarImporter.importWorld(azWorld);
         }
 
-        if (args.containsOption("run")) {
-            this.timeMonitor.start();
-            this.guildsServer.start();
+        if (!args.containsOption("run")) {
+            return;
         }
+
+        GuildsDateProvider dateProvider;
+        boolean offline = args.containsOption("offline");
+        if (offline) {
+            dateProvider = new OfflineDateProvider(2001, 11, 2000);
+        } else {
+            this.timeClient = new GuildsTimeClient(null);
+            dateProvider = new OnlineDateProvider(this.timeClient);
+        }
+
+        this.timeMonitor.start();
+        this.guildsServer.start();
+
+        var game = new GuildsGame(dateProvider);
+        game.run();
     }
 
     @PreDestroy
     public void stop() {
+        if (this.timeClient != null) {
+            this.timeClient.shutdown();
+        }
+
         if (this.timeMonitor.isRunning()) {
             LOG.info("stopping {}...", this.timeMonitor.getClass().getSimpleName());
             this.timeMonitor.shutdown();
