@@ -1,1 +1,1 @@
-rootProject.name = "guildsserver"
+rootProject.name = "cda-guilds-server"
