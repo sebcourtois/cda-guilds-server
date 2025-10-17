@@ -146,8 +146,8 @@ class RequestManager implements Runnable {
                         System.out.println(request);
 
                         for (ClientConnection eachClient : clientConnections) {
-                            if (eachClient == client) continue;
-                            Thread.ofVirtual().start(new SayHello(
+//                            if (eachClient == client) continue;
+                            Thread.ofVirtual().start(new SimpleEcho(
                                     eachClient.getWriter(),
                                     "%nfrom %s:%n>>> %s%n".formatted(client.hostName(), request))
                             );
@@ -183,12 +183,11 @@ class RequestManager implements Runnable {
     }
 }
 
-class SayHello implements Runnable {
-
+class SimpleEcho implements Runnable {
     private final PrintWriter writer;
     private final String message;
 
-    SayHello(PrintWriter writer, String message) {
+    SimpleEcho(PrintWriter writer, String message) {
         this.writer = writer;
         this.message = message;
     }
