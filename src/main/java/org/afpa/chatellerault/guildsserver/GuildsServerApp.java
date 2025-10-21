@@ -3,6 +3,7 @@ package org.afpa.chatellerault.guildsserver;
 import jakarta.annotation.PreDestroy;
 import org.afpa.chatellerault.guildsserver.azgaarworld.AzWorld;
 import org.afpa.chatellerault.guildsserver.core.GuildsDateProvider;
+import org.afpa.chatellerault.guildsserver.core.RequestCommands;
 import org.afpa.chatellerault.guildsserver.repository.*;
 import org.afpa.chatellerault.guildsserver.service.*;
 import org.afpa.chatellerault.guildsserver.util.AppArgs;
@@ -36,7 +37,12 @@ public class GuildsServerApp implements ApplicationRunner {
     }
 
     public static void main(String[] args) {
+        registerRequestCommands();
         SpringApplication.run(GuildsServerApp.class, args);
+    }
+
+    private static void registerRequestCommands() {
+          RequestCommands.register("echo", SimpleEchoCmd::new);
     }
 
     @Override
@@ -78,7 +84,7 @@ public class GuildsServerApp implements ApplicationRunner {
         this.guildsServer.start();
 
         var game = new GuildsGame(dateProvider);
-        game.run();
+//        game.run();
     }
 
     @PreDestroy

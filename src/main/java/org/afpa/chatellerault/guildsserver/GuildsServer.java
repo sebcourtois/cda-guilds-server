@@ -1,6 +1,11 @@
 package org.afpa.chatellerault.guildsserver;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+import org.afpa.chatellerault.guildsserver.core.RequestCommand;
+import org.afpa.chatellerault.guildsserver.core.RequestCommands;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,10 +14,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
 public class GuildsServer implements Runnable {
@@ -143,15 +145,9 @@ class RequestManager implements Runnable {
                         BufferedReader reader = client.getReader();
                         if (!reader.ready()) continue;
                         String request = reader.readLine();
-                        System.out.println(request);
-
-                        for (ClientConnection eachClient : clientConnections) {
-//                            if (eachClient == client) continue;
-                            Thread.ofVirtual().start(new SimpleEcho(
-                                    eachClient.getWriter(),
-                                    "%nfrom %s:%n>>> %s%n".formatted(client.hostName(), request))
-                            );
-                        }
+                        Thread.ofVirtual().start(
+                                new RequestRunner(client.getWriter(), request)
+                        );
                     } catch (IOException e) {
                         LOG.error("Error reading from client: {}", client, e);
                     }
@@ -183,23 +179,105 @@ class RequestManager implements Runnable {
     }
 }
 
-class SimpleEcho implements Runnable {
-    private final PrintWriter writer;
-    private final String message;
+class SimpleEchoCmd implements RequestCommand {
+    private String message;
 
-    SimpleEcho(PrintWriter writer, String message) {
-        this.writer = writer;
+    public SimpleEchoCmd(String message) {
         this.message = message;
     }
 
-    @Override
-    public void run() {
+    public SimpleEchoCmd() {
+    }
+
+    public void loadParams(JsonNode paramsNode) {
+        this.message = paramsNode.get("message").asText();
+    }
+
+    public String execute() {
         try {
             Thread.sleep(200);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        this.writer.println(this.message);
+        return this.message;
+    }
+}
+
+@Log4j2
+class RequestRunner implements Runnable {
+    private static final com.fasterxml.jackson.databind.ObjectMapper
+            jsonMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+    private final PrintWriter writer;
+    private final String request;
+
+
+    RequestRunner(PrintWriter writer, String request) {
+        this.writer = writer;
+        this.request = request;
+    }
+
+    private static String executeRequest(String request) {
+        JsonNode requestRoot;
+        try {
+            requestRoot = jsonMapper.readTree(request);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Invalid request: Not a proper json format", e);
+        }
+
+        JsonNode commandNode = requestRoot.get("command");
+        if (commandNode == null) {
+            throw new RuntimeException("Invalid request: 'command' key missing");
+        }
+        String commandKey = commandNode.asText();
+        RequestCommand command = RequestCommands.get(commandKey);
+        JsonNode params = requestRoot.get("params");
+        try {
+            command.loadParams(params);
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "failed to load params for commands: '%s'".formatted(commandKey), e
+            );
+        }
+
+        String result;
+        try {
+            result = command.execute();
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "failed to execute requested command: '%s'".formatted(commandKey), e
+            );
+        }
+        return result;
+    }
+
+    @Override
+    public void run() {
+        String result = null;
+        String errorMsg = null;
+        try {
+            result = executeRequest(this.request);
+        } catch (Exception e) {
+            errorMsg = e.toString();
+            log.error(e);
+        }
+
+        String response = null;
+        if (result != null) {
+            try {
+                response = jsonMapper.writeValueAsString(Map.of("result", result));
+            } catch (JsonProcessingException e) {
+                errorMsg = e.toString();
+                log.error(e);
+            }
+        }
+        if (errorMsg != null) {
+            try {
+                response = jsonMapper.writeValueAsString(Map.of("error", errorMsg));
+            } catch (JsonProcessingException e) {
+                log.error(e);
+            }
+        }
+        this.writer.println(response);
     }
 }
 
