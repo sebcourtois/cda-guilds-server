@@ -179,30 +179,6 @@ class RequestManager implements Runnable {
     }
 }
 
-class SimpleEchoCmd implements RequestCommand {
-    private String message;
-
-    public SimpleEchoCmd(String message) {
-        this.message = message;
-    }
-
-    public SimpleEchoCmd() {
-    }
-
-    public void loadParams(JsonNode paramsNode) {
-        this.message = paramsNode.get("message").asText();
-    }
-
-    public String execute() {
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        return this.message;
-    }
-}
-
 @Log4j2
 class RequestRunner implements Runnable {
     private static final com.fasterxml.jackson.databind.ObjectMapper
