@@ -11,13 +11,13 @@ import java.util.UUID;
 @Repository
 public class MapTileRepository extends BaseRepository<MapTileData> {
     public MapTileRepository(JdbcClient jdbcClient) {
-        super(jdbcClient, new MapTileData.MapTileTable());
+        super(jdbcClient, new MapTileData.MapTileTable(), MapTileData.builder()::build);
     }
 
     public Optional<MapTileData> findById(UUID someId) {
         String statement = "SELECT * FROM map_tile WHERE id = ?";
 
-        var rowMapper = this.rowMapper(MapTileData.builder()::build);
+        var rowMapper = this.rowMapper();
         return this.jdbcClient.sql(statement)
                 .param(someId)
                 .query(rowMapper)

@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class BiomeRepository extends BaseRepository<BiomeData> {
     public BiomeRepository(JdbcClient jdbcClient) {
-        super(jdbcClient, new BiomeData.BiomeTable());
+        super(jdbcClient, new BiomeData.BiomeTable(), BiomeData.builder()::build);
     }
 }
