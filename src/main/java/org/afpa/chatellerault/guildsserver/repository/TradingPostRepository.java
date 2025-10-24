@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Repository
 public class TradingPostRepository extends BaseRepository<TradingPostData> {
@@ -33,6 +34,15 @@ public class TradingPostRepository extends BaseRepository<TradingPostData> {
                 .param(someId)
                 .query(rowMapper)
                 .optional();
+    }
+
+    public Stream<TradingPostData> all() {
+        String statement = "SELECT * FROM trading_post";
+
+        TableConfigRowMapper<TradingPostData> rowMapper = this.rowMapper(TradingPostData.builder()::build);
+        return this.jdbcClient.sql(statement)
+                .query(rowMapper)
+                .stream();
     }
 }
 

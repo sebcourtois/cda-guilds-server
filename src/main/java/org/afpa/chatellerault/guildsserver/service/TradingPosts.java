@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 public class TradingPosts {
@@ -27,5 +28,9 @@ public class TradingPosts {
     public static Optional<TradingPost> findById(UUID someId) {
         Optional<TradingPostData> tradingPostData = repository.findById(someId);
         return tradingPostData.map((TradingPostData data) -> new TradingPost(data, repository));
+    }
+
+    public static Stream<TradingPost> all() {
+        return repository.all().map(data -> new TradingPost(data, repository));
     }
 }

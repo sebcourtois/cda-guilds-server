@@ -17,7 +17,7 @@ public class MapTileRepository extends BaseRepository<MapTileData> {
     public Optional<MapTileData> findById(UUID someId) {
         String statement = "SELECT * FROM map_tile WHERE id = ?";
 
-        var rowMapper = this.rowMapper(MapTileData.builder().build());
+        var rowMapper = this.rowMapper(MapTileData.builder()::build);
         return this.jdbcClient.sql(statement)
                 .param(someId)
                 .query(rowMapper)

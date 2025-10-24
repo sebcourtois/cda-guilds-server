@@ -239,12 +239,9 @@ class RequestRunner implements Runnable {
 
         String response = null;
         if (result != null) {
-            try {
-                response = jsonMapper.writeValueAsString(Map.of("result", result));
-            } catch (JsonProcessingException e) {
-                errorMsg = e.toString();
-                log.error(e);
-            }
+            response = """
+                    {"result": %s}
+                    """.formatted(result).strip();
         }
         if (errorMsg != null) {
             try {
