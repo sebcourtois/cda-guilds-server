@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 
@@ -15,6 +16,7 @@ public abstract class BaseRepository<T> {
 
     public final JdbcClient jdbcClient;
     private final TableConfig<T> tableConfig;
+
 
     public BaseRepository(JdbcClient jdbcClient, TableConfig<T> tableConfig) {
         this.jdbcClient = jdbcClient;
@@ -42,7 +44,7 @@ public abstract class BaseRepository<T> {
         );
         this.jdbcClient.sql(sql)
                 .paramSource(sqlParamSource)
-                .query(this.rowMapper(tableRow))
+                .query(this.rowMapper(() -> tableRow))
                 .single();
     }
 
@@ -75,7 +77,7 @@ public abstract class BaseRepository<T> {
         return this.tableConfig;
     }
 
-    public TableConfigRowMapper<T> rowMapper(T tableMappedObj) {
+    public TableConfigRowMapper<T> rowMapper(Supplier<T> tableMappedObj) {
         return this.tableConfig.rowMapper(tableMappedObj);
     }
 

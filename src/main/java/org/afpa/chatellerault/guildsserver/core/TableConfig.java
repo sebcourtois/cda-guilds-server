@@ -2,6 +2,7 @@ package org.afpa.chatellerault.guildsserver.core;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.Supplier;
 
 public class TableConfig<T> {
     private final String name;
@@ -31,7 +32,7 @@ public class TableConfig<T> {
         return primaryFields;
     }
 
-    public TableConfigRowMapper<T> rowMapper(T tableMappedObj) {
+    public TableConfigRowMapper<T> rowMapper(Supplier<T> tableMappedObj) {
         return new TableConfigRowMapper<>(this, tableMappedObj);
     }
 }
