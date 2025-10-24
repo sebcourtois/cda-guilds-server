@@ -11,7 +11,7 @@ import java.util.Optional;
 public class CaravanRepository extends BaseRepository<CaravanData> {
 
     public CaravanRepository(JdbcClient jdbcClient) {
-        super(jdbcClient, new CaravanData.CaravanTable());
+        super(jdbcClient, new CaravanData.CaravanTable(), CaravanData.builder()::build);
     }
 
     public Optional<CaravanData> findByName(String caravanName) {
@@ -21,7 +21,7 @@ public class CaravanRepository extends BaseRepository<CaravanData> {
 
         return this.jdbcClient.sql(statement)
                 .param(caravanName)
-                .query(this.rowMapper(CaravanData.builder()::build))
+                .query(this.rowMapper())
                 .optional();
     }
 }

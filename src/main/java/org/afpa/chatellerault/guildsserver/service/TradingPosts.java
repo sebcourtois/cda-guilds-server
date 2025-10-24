@@ -30,7 +30,7 @@ public class TradingPosts {
         return tradingPostData.map((TradingPostData data) -> new TradingPost(data, repository));
     }
 
-    public static Stream<TradingPost> all() {
-        return repository.all().map(data -> new TradingPost(data, repository));
+    public static Stream<TradingPost> findAll() {
+        return repository.findAll().map(data -> new TradingPost(data, repository));
     }
 }

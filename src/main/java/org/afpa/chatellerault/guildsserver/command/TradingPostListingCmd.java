@@ -19,7 +19,7 @@ public class TradingPostListingCmd implements RequestCommand {
         String json;
         try {
             json = jsonMapper.writeValueAsString(
-                    TradingPosts.all()
+                    TradingPosts.findAll()
                             .map(TradingPost::getData)
                             .toList()
             );
