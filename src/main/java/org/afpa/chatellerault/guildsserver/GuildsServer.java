@@ -229,11 +229,11 @@ class RequestRunner implements Runnable {
     @Override
     public void run() {
         String result = null;
-        String errorMsg = null;
+        Exception error = null;
         try {
             result = executeRequest(this.request);
         } catch (Exception e) {
-            errorMsg = e.toString();
+            error = e;
             log.error(e);
         }
 
@@ -243,9 +243,15 @@ class RequestRunner implements Runnable {
                     {"result": %s}
                     """.formatted(result).strip();
         }
-        if (errorMsg != null) {
+        if (error != null) {
             try {
-                response = jsonMapper.writeValueAsString(Map.of("error", errorMsg));
+                Throwable cause = error.getCause();
+                response = jsonMapper.writeValueAsString(Map.of(
+                        "error", Map.of(
+                                "message", error.getMessage(),
+                                "cause", cause != null ? cause.getMessage() : ""
+                        )
+                ));
             } catch (JsonProcessingException e) {
                 log.error(e);
             }

@@ -89,7 +89,7 @@ public class GuildsServerApp implements ApplicationRunner {
         this.guildsServer.start();
 
         var game = new GuildsGame(dateProvider);
-//        game.run();
+        game.run();
     }
 
     @PreDestroy
