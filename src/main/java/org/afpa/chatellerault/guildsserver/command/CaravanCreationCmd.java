@@ -22,6 +22,7 @@ public class CaravanCreationCmd implements RequestCommand {
 
     @Override
     public void loadParams(JsonNode params) {
+        assert params != null;
         this.name = params.get("name").asText();
         this.tradingPostId = UUID.fromString(params.get("trading_post").asText());
     }

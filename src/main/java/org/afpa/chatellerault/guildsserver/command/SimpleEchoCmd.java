@@ -14,6 +14,7 @@ public class SimpleEchoCmd implements RequestCommand {
     }
 
     public void loadParams(JsonNode paramsNode) {
+        assert paramsNode != null;
         this.message = paramsNode.get("message").asText();
     }
 
