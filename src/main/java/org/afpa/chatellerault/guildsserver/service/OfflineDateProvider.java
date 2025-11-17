@@ -1,7 +1,7 @@
 package org.afpa.chatellerault.guildsserver.service;
 
-import org.afpa.chatellerault.guildsserver.model.GuildsDate;
 import org.afpa.chatellerault.guildsserver.core.GuildsDateProvider;
+import org.afpa.chatellerault.guildsserver.model.GuildsDate;
 
 public class OfflineDateProvider implements GuildsDateProvider {
     private final int interval;
