@@ -2,6 +2,9 @@ package org.afpa.chatellerault.guildsserver;
 
 import jakarta.annotation.PreDestroy;
 import org.afpa.chatellerault.guildsserver.azgaarworld.AzWorld;
+import org.afpa.chatellerault.guildsserver.command.CaravanCreationCmd;
+import org.afpa.chatellerault.guildsserver.command.SimpleEchoCmd;
+import org.afpa.chatellerault.guildsserver.command.TradingPostListingCmd;
 import org.afpa.chatellerault.guildsserver.core.GuildsDateProvider;
 import org.afpa.chatellerault.guildsserver.core.RequestCommands;
 import org.afpa.chatellerault.guildsserver.repository.*;
@@ -42,7 +45,9 @@ public class GuildsServerApp implements ApplicationRunner {
     }
 
     private static void registerRequestCommands() {
-          RequestCommands.register("echo", SimpleEchoCmd::new);
+        RequestCommands.register("echo", SimpleEchoCmd::new);
+        RequestCommands.register("create_caravan", CaravanCreationCmd::new);
+        RequestCommands.register("list_trading_post", TradingPostListingCmd::new);
     }
 
     @Override
@@ -84,7 +89,7 @@ public class GuildsServerApp implements ApplicationRunner {
         this.guildsServer.start();
 
         var game = new GuildsGame(dateProvider);
-//        game.run();
+        game.run();
     }
 
     @PreDestroy

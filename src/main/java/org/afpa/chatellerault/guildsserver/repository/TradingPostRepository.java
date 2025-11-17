@@ -8,12 +8,17 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Repository
 public class TradingPostRepository extends BaseRepository<TradingPostData> {
 
     public TradingPostRepository(JdbcClient jdbcClient) {
-        super(jdbcClient, new TradingPostData.TradingPostTable());
+        super(
+                jdbcClient,
+                new TradingPostData.TradingPostTable(),
+                TradingPostData.builder()::build
+        );
     }
 
     public Optional<TradingPostData> findByName(String someName) {
@@ -21,14 +26,14 @@ public class TradingPostRepository extends BaseRepository<TradingPostData> {
 
         return this.jdbcClient.sql(statement)
                 .param(someName)
-                .query(this.rowMapper(TradingPostData.builder()::build))
+                .query(this.rowMapper())
                 .optional();
     }
 
     public Optional<TradingPostData> findById(UUID someId) {
         String statement = "SELECT * FROM trading_post WHERE id = ?";
 
-        TableConfigRowMapper<TradingPostData> rowMapper = this.rowMapper(TradingPostData.builder()::build);
+        TableConfigRowMapper<TradingPostData> rowMapper = this.rowMapper();
         return this.jdbcClient.sql(statement)
                 .param(someId)
                 .query(rowMapper)

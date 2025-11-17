@@ -179,30 +179,6 @@ class RequestManager implements Runnable {
     }
 }
 
-class SimpleEchoCmd implements RequestCommand {
-    private String message;
-
-    public SimpleEchoCmd(String message) {
-        this.message = message;
-    }
-
-    public SimpleEchoCmd() {
-    }
-
-    public void loadParams(JsonNode paramsNode) {
-        this.message = paramsNode.get("message").asText();
-    }
-
-    public String execute() {
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        return this.message;
-    }
-}
-
 @Log4j2
 class RequestRunner implements Runnable {
     private static final com.fasterxml.jackson.databind.ObjectMapper
@@ -253,26 +229,29 @@ class RequestRunner implements Runnable {
     @Override
     public void run() {
         String result = null;
-        String errorMsg = null;
+        Exception error = null;
         try {
             result = executeRequest(this.request);
         } catch (Exception e) {
-            errorMsg = e.toString();
+            error = e;
             log.error(e);
         }
 
         String response = null;
         if (result != null) {
-            try {
-                response = jsonMapper.writeValueAsString(Map.of("result", result));
-            } catch (JsonProcessingException e) {
-                errorMsg = e.toString();
-                log.error(e);
-            }
+            response = """
+                    {"result": %s}
+                    """.formatted(result).strip();
         }
-        if (errorMsg != null) {
+        if (error != null) {
             try {
-                response = jsonMapper.writeValueAsString(Map.of("error", errorMsg));
+                Throwable cause = error.getCause();
+                response = jsonMapper.writeValueAsString(Map.of(
+                        "error", Map.of(
+                                "message", error.getMessage(),
+                                "cause", cause != null ? cause.getMessage() : ""
+                        )
+                ));
             } catch (JsonProcessingException e) {
                 log.error(e);
             }

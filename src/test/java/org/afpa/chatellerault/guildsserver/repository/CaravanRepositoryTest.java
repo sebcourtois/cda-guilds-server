@@ -36,7 +36,8 @@ class CaravanRepositoryTest {
     void create() throws SQLException {
         int caravanCount = 5;
         List<CaravanData> newCaravans = IntStream.rangeClosed(1, caravanCount)
-                .mapToObj(i -> CaravanData.builder().name("Caravan #%s".formatted(i)).build())
+                .mapToObj("Caravan #%s"::formatted)
+                .map(n -> CaravanData.builder().name(n).build())
                 .toList();
 
         for (var caravanData : newCaravans) {
@@ -46,11 +47,7 @@ class CaravanRepositoryTest {
         String tableName = this.repository.tableConfig().name();
         assertThat(JdbcTestUtils.countRowsInTable(this.jdbcClient, tableName)).isEqualTo(caravanCount);
 
-        String sql = "SELECT * FROM \"%s\";".formatted(tableName);
-
-        List<CaravanData> foundCaravans = this.jdbcClient.sql(sql)
-                .query(this.repository.rowMapper(CaravanData.builder()::build))
-                .list();
+        List<CaravanData> foundCaravans = this.repository.findAll().toList();
 
         Set<String> createdNames = newCaravans.stream()
                 .map(CaravanData::getName)

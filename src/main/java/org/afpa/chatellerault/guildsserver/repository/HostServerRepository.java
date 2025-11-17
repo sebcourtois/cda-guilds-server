@@ -8,7 +8,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class HostServerRepository extends BaseRepository<HostServerData> {
     public HostServerRepository(JdbcClient jdbcClient) {
-        super(jdbcClient, new HostServerData.HostServerTable());
+        super(
+                jdbcClient,
+                new HostServerData.HostServerTable(),
+                HostServerData.builder()::build
+        );
     }
 
 }

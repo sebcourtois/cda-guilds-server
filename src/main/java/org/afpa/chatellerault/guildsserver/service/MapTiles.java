@@ -7,6 +7,8 @@ import org.afpa.chatellerault.guildsserver.repository.MapTileRepository;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class MapTiles {
@@ -24,5 +26,10 @@ public class MapTiles {
 
     public static int getRowCount() {
         return repository.getRowCount();
+    }
+
+    public static Optional<MapTile> findById(UUID someId) {
+        Optional<MapTileData> mapTileData = repository.findById(someId);
+        return mapTileData.map((MapTileData data) -> new MapTile(data, repository));
     }
 }

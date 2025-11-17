@@ -10,23 +10,29 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public abstract class BaseRepository<T> {
 
     public final JdbcClient jdbcClient;
     private final TableConfig<T> tableConfig;
+    private final Supplier<T> entitySupplier;
 
-
-    public BaseRepository(JdbcClient jdbcClient, TableConfig<T> tableConfig) {
+    public BaseRepository(
+            JdbcClient jdbcClient,
+            TableConfig<T> tableConfig,
+            Supplier<T> entitySupplier
+    ) {
         this.jdbcClient = jdbcClient;
         this.tableConfig = tableConfig;
+        this.entitySupplier = entitySupplier;
     }
 
     public void create(T tableRow) throws SQLException {
         var sqlParamSource = new MapSqlParameterSource();
         var pgObjMapper = new PGobjectMapper();
-        for (TableConfigField<T, ?> field : this.tableConfig().fields()) {
+        for (TableConfigField<T, ?> field : this.tableConfig.fields()) {
             if (field.isGenerated()) continue;
             sqlParamSource.addValue(
                     field.getName(),
@@ -38,13 +44,13 @@ public abstract class BaseRepository<T> {
         String sql = """
                 INSERT INTO "%s" ("%s") VALUES (%s) RETURNING *;
                 """.formatted(
-                this.tableConfig().name(),
+                this.tableConfig.name(),
                 String.join("\", \"", fieldNames),
                 String.join(", ", valuePlaceholders)
         );
         this.jdbcClient.sql(sql)
                 .paramSource(sqlParamSource)
-                .query(this.rowMapper(() -> tableRow))
+                .query(this.tableConfig.rowMapper(() -> tableRow))
                 .single();
     }
 
@@ -63,13 +69,22 @@ public abstract class BaseRepository<T> {
 
         String sql = """
                 DELETE FROM "%s" WHERE %s;
-                """.formatted(this.tableConfig().name(), pkCondition);
+                """.formatted(this.tableConfig.name(), pkCondition);
 
         return this.jdbcClient.sql(sql).paramSource(sqlParamSource).update();
     }
 
+    public Stream<T> findAll() {
+        String statement = "SELECT * FROM \"%s\"".formatted(this.tableConfig.name());
+
+        TableConfigRowMapper<T> rowMapper = this.rowMapper();
+        return this.jdbcClient.sql(statement)
+                .query(rowMapper)
+                .stream();
+    }
+
     public int getRowCount() {
-        String sql = "SELECT COUNT(0) FROM \"%s\";".formatted(this.tableConfig().name());
+        String sql = "SELECT COUNT(0) FROM \"%s\";".formatted(this.tableConfig.name());
         return this.jdbcClient.sql(sql).query(Integer.class).single();
     }
 
@@ -77,8 +92,8 @@ public abstract class BaseRepository<T> {
         return this.tableConfig;
     }
 
-    public TableConfigRowMapper<T> rowMapper(Supplier<T> tableMappedObj) {
-        return this.tableConfig.rowMapper(tableMappedObj);
+    public TableConfigRowMapper<T> rowMapper() {
+        return this.tableConfig.rowMapper(this.entitySupplier);
     }
 
     public static class PGobjectMapper {
