@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.afpa.chatellerault.guildsserver.core.RequestCommand;
-import org.afpa.chatellerault.guildsserver.core.RequestCommands;
+import org.afpa.chatellerault.guildsserver.core.RemoteCommand;
+import org.afpa.chatellerault.guildsserver.core.RemoteCommands;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -192,7 +192,7 @@ class RequestRunner implements Runnable {
         this.request = request;
     }
 
-    private static String executeRequest(String request) {
+    private static JsonNode executeRequest(String request) {
         JsonNode requestRoot;
         try {
             requestRoot = jsonMapper.readTree(request);
@@ -205,7 +205,7 @@ class RequestRunner implements Runnable {
             throw new RuntimeException("Invalid request: 'command' key missing");
         }
         String commandKey = commandNode.asText();
-        RequestCommand command = RequestCommands.get(commandKey);
+        RemoteCommand command = RemoteCommands.get(commandKey);
         JsonNode params = requestRoot.get("params");
         try {
             command.loadParams(params);
@@ -215,7 +215,7 @@ class RequestRunner implements Runnable {
             );
         }
 
-        String result;
+        JsonNode result;
         try {
             result = command.execute();
         } catch (Exception e) {
@@ -228,7 +228,7 @@ class RequestRunner implements Runnable {
 
     @Override
     public void run() {
-        String result = null;
+        JsonNode result = null;
         Exception error = null;
         try {
             result = executeRequest(this.request);
@@ -239,10 +239,16 @@ class RequestRunner implements Runnable {
 
         String response = null;
         if (result != null) {
-            response = """
-                    {"result": %s}
-                    """.formatted(result).strip();
+            try {
+                response = """
+                        {"result": %s}
+                        """.formatted(jsonMapper.writeValueAsString(result)).strip();
+            } catch (JsonProcessingException e) {
+                error = e;
+                log.error(e);
+            }
         }
+
         if (error != null) {
             try {
                 Throwable cause = error.getCause();

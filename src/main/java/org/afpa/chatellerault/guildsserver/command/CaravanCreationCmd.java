@@ -1,8 +1,7 @@
 package org.afpa.chatellerault.guildsserver.command;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.afpa.chatellerault.guildsserver.core.RequestCommand;
+import org.afpa.chatellerault.guildsserver.core.RemoteCommand;
 import org.afpa.chatellerault.guildsserver.model.Caravan;
 import org.afpa.chatellerault.guildsserver.model.CaravanData;
 import org.afpa.chatellerault.guildsserver.model.MapTile;
@@ -13,12 +12,9 @@ import org.afpa.chatellerault.guildsserver.service.TradingPosts;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class CaravanCreationCmd implements RequestCommand {
-    private static final com.fasterxml.jackson.databind.ObjectMapper
-            jsonMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+public class CaravanCreationCmd extends RemoteCommand {
     private String name;
     private UUID tradingPostId;
-
 
     @Override
     public void loadParams(JsonNode params) {
@@ -28,10 +24,9 @@ public class CaravanCreationCmd implements RequestCommand {
     }
 
     @Override
-    public String execute() {
+    public JsonNode execute() {
         TradingPost tradingPost = TradingPosts.findById(this.tradingPostId).orElseThrow();
         MapTile mapTile = tradingPost.getLocation().orElseThrow();
-
         Caravan newCaravan;
         try {
             newCaravan = Caravans.create(CaravanData.builder()
@@ -43,10 +38,10 @@ public class CaravanCreationCmd implements RequestCommand {
             throw new RuntimeException(e);
         }
 
-        String json;
+        JsonNode json;
         try {
-            json = jsonMapper.writeValueAsString(newCaravan.getData());
-        } catch (JsonProcessingException e) {
+            json = getJacksonMapper().valueToTree(newCaravan);
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException(e);
         }
         return json;
