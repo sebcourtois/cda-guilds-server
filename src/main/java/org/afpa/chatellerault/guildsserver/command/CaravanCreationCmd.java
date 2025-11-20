@@ -12,19 +12,19 @@ import org.afpa.chatellerault.guildsserver.service.TradingPosts;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class CaravanCreationCmd extends RemoteCommand {
+public class CaravanCreationCmd extends RemoteCommand<Caravan> {
     private String name;
     private UUID tradingPostId;
 
     @Override
-    public void loadParams(JsonNode params) {
+    public void loadArguments(JsonNode params) {
         assert params != null;
         this.name = params.get("name").asText();
         this.tradingPostId = UUID.fromString(params.get("trading_post").asText());
     }
 
     @Override
-    public JsonNode execute() {
+    public Caravan execute() {
         TradingPost tradingPost = TradingPosts.findById(this.tradingPostId).orElseThrow();
         MapTile mapTile = tradingPost.getLocation().orElseThrow();
         Caravan newCaravan;
@@ -37,13 +37,6 @@ public class CaravanCreationCmd extends RemoteCommand {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        JsonNode json;
-        try {
-            json = getJacksonMapper().valueToTree(newCaravan);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException(e);
-        }
-        return json;
+        return newCaravan;
     }
 }

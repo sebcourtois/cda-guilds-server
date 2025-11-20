@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @JsonComponent
 public class Caravans {
@@ -35,6 +36,10 @@ public class Caravans {
                 "No such %s named: '%s'".formatted(Caravan.class.getName(), someName)
         );
         return new Caravan(caravanData.get(), repository);
+    }
+
+    public static Stream<Caravan> findAll() {
+        return repository.findAll().map(data -> new Caravan(data, repository));
     }
 
     public static class Serializer extends JsonObjectSerializer<Caravan> {

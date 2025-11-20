@@ -2,23 +2,18 @@ package org.afpa.chatellerault.guildsserver.command;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.afpa.chatellerault.guildsserver.core.RemoteCommand;
+import org.afpa.chatellerault.guildsserver.model.TradingPost;
 import org.afpa.chatellerault.guildsserver.service.TradingPosts;
 
-public class TradingPostListingCmd extends RemoteCommand {
+import java.util.List;
+
+public class TradingPostListingCmd extends RemoteCommand<List<TradingPost>> {
     @Override
-    public void loadParams(JsonNode params) {
+    public void loadArguments(JsonNode params) {
     }
 
     @Override
-    public JsonNode execute() {
-        JsonNode json;
-        try {
-            json = getJacksonMapper().valueToTree(
-                    TradingPosts.findAll().toList()
-            );
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException(e);
-        }
-        return json;
+    public List<TradingPost> execute() {
+        return TradingPosts.findAll().toList();
     }
 }

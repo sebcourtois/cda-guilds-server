@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PreDestroy;
 import org.afpa.chatellerault.guildsserver.azgaarworld.AzWorld;
 import org.afpa.chatellerault.guildsserver.command.CaravanCreationCmd;
+import org.afpa.chatellerault.guildsserver.command.CaravanListingCmd;
 import org.afpa.chatellerault.guildsserver.command.SimpleEchoCmd;
 import org.afpa.chatellerault.guildsserver.command.TradingPostListingCmd;
 import org.afpa.chatellerault.guildsserver.core.GuildsDateProvider;
@@ -29,15 +30,13 @@ public class GuildsServerApp implements ApplicationRunner {
     private static final Logger LOG = LogManager.getLogger(GuildsServerApp.class);
 
     private final JdbcClient jdbcClient;
-    private final ObjectMapper jacksonMapper;
     private final GuildsServer guildsServer;
     private final GuildsTimeMonitor timeMonitor;
     private GuildsTimeClient timeClient;
 
     public GuildsServerApp(JdbcClient jdbcClient, ObjectMapper jacksonMapper) {
         this.jdbcClient = jdbcClient;
-        this.jacksonMapper = jacksonMapper;
-        this.guildsServer = new GuildsServer();
+        this.guildsServer = new GuildsServer(jacksonMapper);
         this.timeMonitor = new GuildsTimeMonitor();
         this.timeClient = null;
     }
@@ -47,12 +46,9 @@ public class GuildsServerApp implements ApplicationRunner {
     }
 
     private void registerCommands() {
-        SimpleEchoCmd.setJacksonMapper(this.jacksonMapper);
-        CaravanCreationCmd.setJacksonMapper(this.jacksonMapper);
-        TradingPostListingCmd.setJacksonMapper(this.jacksonMapper);
-
         RemoteCommands.register("echo", SimpleEchoCmd::new);
         RemoteCommands.register("create_caravan", CaravanCreationCmd::new);
+        RemoteCommands.register("list_caravans", CaravanListingCmd::new);
         RemoteCommands.register("list_trading_posts", TradingPostListingCmd::new);
     }
 
