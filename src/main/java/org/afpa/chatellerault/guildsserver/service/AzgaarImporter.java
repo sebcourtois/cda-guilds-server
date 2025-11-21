@@ -21,8 +21,10 @@ public class AzgaarImporter {
     public static void importWorld(AzWorld azWorld) throws SQLException {
         HashMap<Integer, Biome> importedBiomes = AzgaarImporter.importBiomes(azWorld.biomes());
         LOG.info("Imported biomes: {}/{}", importedBiomes.size(), azWorld.biomes().size());
+
         HashMap<Integer, MapTile> importedMapTiles = AzgaarImporter.importCells(azWorld.cells(), importedBiomes);
         LOG.info("Imported map tiles: {}/{}", importedMapTiles.size(), azWorld.cells().size());
+
         HashMap<Integer, TradingPost> importedTradingPosts = AzgaarImporter.importBurgs(azWorld.burgs(), importedMapTiles);
         LOG.info("Imported trading posts: {}/{}", importedTradingPosts.size(), azWorld.burgs().size());
     }

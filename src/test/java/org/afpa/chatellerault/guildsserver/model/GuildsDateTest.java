@@ -45,4 +45,5 @@ class GuildsDateTest {
         assertThat(elapsedDays % 365).isEqualTo(30);
         assertThat(elapsedDays / 365).isEqualTo(5);
     }
+
 }

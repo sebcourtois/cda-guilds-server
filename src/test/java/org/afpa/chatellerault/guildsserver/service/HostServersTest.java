@@ -35,7 +35,7 @@ public class HostServersTest {
     }
 
     @Test
-    void create() throws Exception {
+    void testCreate() throws Exception {
         var data = HostServerData.builder()
                 .name("sebserver")
                 .ipAddress(InetAddress.getLocalHost())

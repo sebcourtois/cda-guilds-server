@@ -34,7 +34,7 @@ class AzgaarImporterTest {
     }
 
     @Test
-    void importWorld() throws Exception {
+    void testImportWorld() throws Exception {
         InputStream jsonStream = new ClassPathResource("azgaar_world.json").getInputStream();
         AzWorld azWorld = AzWorld.fromJson(jsonStream);
         AzgaarImporter.importWorld(azWorld);

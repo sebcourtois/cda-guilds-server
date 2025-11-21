@@ -39,7 +39,7 @@ class TradingPostsTest {
     }
 
     @Test
-    void serializeEmptyOne() throws Exception {
+    void testSerializeEmptyOne() throws Exception {
         String tpName = "Tour de France";
         int population = 500;
         TradingPostData data = TradingPostData.builder()

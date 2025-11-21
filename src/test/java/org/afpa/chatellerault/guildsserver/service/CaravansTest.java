@@ -42,7 +42,7 @@ class CaravansTest {
     }
 
     @Test
-    void createOneCaravanWithDestinationAndDeleteThem() throws Exception {
+    void testCreateOneCaravanWithDestinationAndDeleteThem() throws Exception {
         TradingPost someTradePost = TradingPosts.create(TradingPostData.builder()
                 .name("Chatellerault")
                 .build()

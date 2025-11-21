@@ -33,7 +33,7 @@ class CaravanRepositoryTest {
     }
 
     @Test
-    void create() throws SQLException {
+    void testCreate() throws SQLException {
         int caravanCount = 5;
         List<CaravanData> newCaravans = IntStream.rangeClosed(1, caravanCount)
                 .mapToObj("Caravan #%s"::formatted)

@@ -33,7 +33,7 @@ public class MapTilesTest {
     }
 
     @Test
-    void create() throws Exception {
+    void testCreate() throws Exception {
         MapTileData data = MapTileData.builder()
                 .posX(5487)
                 .posY(5465)

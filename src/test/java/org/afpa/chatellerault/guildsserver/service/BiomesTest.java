@@ -28,7 +28,7 @@ class BiomesTest {
     }
 
     @Test
-    void create() throws Exception {
+    void testCreate() throws Exception {
         var data = BiomeData.builder()
                 .name("Wonderland")
                 .build();
