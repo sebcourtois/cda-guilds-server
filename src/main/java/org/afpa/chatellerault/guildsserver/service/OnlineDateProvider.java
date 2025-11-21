@@ -1,8 +1,8 @@
 package org.afpa.chatellerault.guildsserver.service;
 
 import org.afpa.chatellerault.guildsserver.GuildsTimeClient;
-import org.afpa.chatellerault.guildsserver.model.GuildsDate;
 import org.afpa.chatellerault.guildsserver.core.GuildsDateProvider;
+import org.afpa.chatellerault.guildsserver.model.GuildsDate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

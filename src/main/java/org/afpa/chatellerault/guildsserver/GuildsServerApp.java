@@ -1,12 +1,14 @@
 package org.afpa.chatellerault.guildsserver;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PreDestroy;
 import org.afpa.chatellerault.guildsserver.azgaarworld.AzWorld;
 import org.afpa.chatellerault.guildsserver.command.CaravanCreationCmd;
+import org.afpa.chatellerault.guildsserver.command.CaravanListingCmd;
 import org.afpa.chatellerault.guildsserver.command.SimpleEchoCmd;
 import org.afpa.chatellerault.guildsserver.command.TradingPostListingCmd;
 import org.afpa.chatellerault.guildsserver.core.GuildsDateProvider;
-import org.afpa.chatellerault.guildsserver.core.RequestCommands;
+import org.afpa.chatellerault.guildsserver.core.RemoteCommands;
 import org.afpa.chatellerault.guildsserver.repository.*;
 import org.afpa.chatellerault.guildsserver.service.*;
 import org.afpa.chatellerault.guildsserver.util.AppArgs;
@@ -32,22 +34,22 @@ public class GuildsServerApp implements ApplicationRunner {
     private final GuildsTimeMonitor timeMonitor;
     private GuildsTimeClient timeClient;
 
-    public GuildsServerApp(JdbcClient jdbcClient) {
+    public GuildsServerApp(JdbcClient jdbcClient, ObjectMapper jacksonMapper) {
         this.jdbcClient = jdbcClient;
-        this.guildsServer = new GuildsServer();
+        this.guildsServer = new GuildsServer(jacksonMapper);
         this.timeMonitor = new GuildsTimeMonitor();
         this.timeClient = null;
     }
 
     public static void main(String[] args) {
-        registerRequestCommands();
         SpringApplication.run(GuildsServerApp.class, args);
     }
 
-    private static void registerRequestCommands() {
-        RequestCommands.register("echo", SimpleEchoCmd::new);
-        RequestCommands.register("create_caravan", CaravanCreationCmd::new);
-        RequestCommands.register("list_trading_post", TradingPostListingCmd::new);
+    private void registerCommands() {
+        RemoteCommands.register("echo", SimpleEchoCmd::new);
+        RemoteCommands.register("create_caravan", CaravanCreationCmd::new);
+        RemoteCommands.register("list_caravans", CaravanListingCmd::new);
+        RemoteCommands.register("list_trading_posts", TradingPostListingCmd::new);
     }
 
     @Override
@@ -59,6 +61,8 @@ public class GuildsServerApp implements ApplicationRunner {
         HostServers.setRepository(new HostServerRepository(this.jdbcClient));
         MapTiles.setRepository(new MapTileRepository(this.jdbcClient));
         TradingPosts.setRepository(new TradingPostRepository(this.jdbcClient));
+
+        this.registerCommands();
 
         System.out.println(Arrays.toString(args.getSourceArgs()));
 
